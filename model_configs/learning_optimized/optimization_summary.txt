@@ -1,0 +1,24 @@
+STUDY STATISTICS
+
+Total number of trials:	623
+Number of pruned trials:	0
+Number of complete trials:	608
+Number of failed trials:	13
+Best trial:
+
+FrozenTrial(number=125, state=1, values=[0.5528063774108887], datetime_start=datetime.datetime(2024, 7, 5, 21, 1, 37, 202274), datetime_complete=datetime.datetime(2024, 7, 5, 21, 34, 23, 190373), params={'epochs': 6, 'Nadam_1_minus_beta_2': 0.0017932649551730192, 'Nadam_epsilon': 8.327220255431336e-07, 'Nadam_weight_decay': 3.209356965523218e-05, 'LR_shift_peak': 0.7953957668000962, 'LR_final_scale': 0.851297204114433, 'max_lr': 0.02965487191709626, 'max_momentum': 0.9287618621085523, 'min_momentum': 0.8630069721586949, 'huber_delta': 11.267240087359543, 'dl_drop_1of2': 0.0012428917539097867}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'epochs': IntDistribution(high=30, log=True, low=3, step=1), 'Nadam_1_minus_beta_2': FloatDistribution(high=0.1, log=True, low=1e-05, step=None), 'Nadam_epsilon': FloatDistribution(high=1e-06, log=True, low=1e-08, step=None), 'Nadam_weight_decay': FloatDistribution(high=0.0001, log=True, low=1e-06, step=None), 'LR_shift_peak': FloatDistribution(high=0.8, log=False, low=0.2, step=None), 'LR_final_scale': FloatDistribution(high=1.0, log=False, low=0.0, step=None), 'max_lr': FloatDistribution(high=0.37850893, log=True, low=0.01584893, step=None), 'max_momentum': FloatDistribution(high=0.99, log=False, low=0.9, step=None), 'min_momentum': FloatDistribution(high=0.9, log=False, low=0.8, step=None), 'huber_delta': FloatDistribution(high=13.5, log=False, low=0.135, step=None), 'dl_drop_1of2': FloatDistribution(high=0.010633947812632601, log=False, low=0.0, step=None)}, trial_id=126, value=None)
+Value:	0.5528063774108887
+
+HYPERPARAMETERS:
+
+	epochs:	6
+	Nadam_1_minus_beta_2:	0.0017932649551730192
+	Nadam_epsilon:	8.327220255431336e-07
+	Nadam_weight_decay:	3.209356965523218e-05
+	LR_shift_peak:	0.7953957668000962
+	LR_final_scale:	0.851297204114433
+	max_lr:	0.02965487191709626
+	max_momentum:	0.9287618621085523
+	min_momentum:	0.8630069721586949
+	huber_delta:	11.267240087359543
+	dl_drop_1of2:	0.0012428917539097867

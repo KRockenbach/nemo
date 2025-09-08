@@ -1,0 +1,16 @@
+STUDY STATISTICS
+
+Total number of trials:	322
+Number of pruned trials:	0
+Number of complete trials:	311
+Number of failed trials:	9
+Best trial:
+
+FrozenTrial(number=196, state=1, values=[0.5566493272781372], datetime_start=datetime.datetime(2024, 8, 4, 5, 42, 20, 622625), datetime_complete=datetime.datetime(2024, 8, 4, 6, 15, 5, 546228), params={'max_lr': 0.0663012475147729, 'Bnorm_momentum': 0.816691400963907, 'huber_delta': 2.9465947350775075}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'max_lr': FloatDistribution(high=0.1, log=False, low=0.01, step=None), 'Bnorm_momentum': FloatDistribution(high=0.9, log=False, low=0.7, step=None), 'huber_delta': FloatDistribution(high=3.0, log=False, low=1.0, step=None)}, trial_id=197, value=None)
+Value:	0.5566493272781372
+
+HYPERPARAMETERS:
+
+	max_lr:	0.0663012475147729
+	Bnorm_momentum:	0.816691400963907
+	huber_delta:	2.9465947350775075

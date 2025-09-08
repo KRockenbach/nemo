@@ -1,0 +1,80 @@
+STUDY STATISTICS
+
+Total number of trials:	1122
+Number of pruned trials:	892
+Number of complete trials:	209
+Number of failed trials:	20
+Best trial:
+
+FrozenTrial(number=697, state=1, values=[0.5083717107772827], datetime_start=datetime.datetime(2024, 6, 2, 14, 13, 55, 176057), datetime_complete=datetime.datetime(2024, 6, 2, 14, 43, 31, 957372), params={'outside': 5000, 'inside': 1200, 'batch_exponent': 5, 'use_drop': True, 'use_last_layer_drop': True, 'ncl_P': 6, 'ncl_T': 2, 'nlstm_P': 0, 'nlstm_T': 2, 'use_exp': False, 'exponent_filter_P_0of6': 9, 'exponent_kernel_P_0of6': 2, 'exponent_pool_size_P_0of6': 2, 'conv_frac_P_0of6': 0.0, 'pool_type_P_0of6': 'max', 'pool_frac_P_0of6': 0.7, 'exponent_filter_P_1of6': 8, 'exponent_kernel_P_1of6': 2, 'exponent_pool_size_P_1of6': 6, 'conv_frac_P_1of6': 0.2, 'pool_type_P_1of6': 'avrg', 'pool_frac_P_1of6': 0.5, 'exponent_filter_P_2of6': 7, 'exponent_kernel_P_2of6': 4, 'exponent_pool_size_P_2of6': 1, 'conv_frac_P_2of6': 0.2, 'pool_type_P_2of6': 'avrg', 'pool_frac_P_2of6': 1.0, 'exponent_filter_P_3of6': 7, 'exponent_kernel_P_3of6': 2, 'exponent_pool_size_P_3of6': 1, 'conv_frac_P_3of6': 0.5, 'pool_type_P_3of6': 'max', 'pool_frac_P_3of6': 0.9, 'exponent_filter_P_4of6': 9, 'exponent_kernel_P_4of6': 5, 'exponent_pool_size_P_4of6': 3, 'conv_frac_P_4of6': 0.5, 'pool_type_P_4of6': 'avrg', 'pool_frac_P_4of6': 0.5, 'exponent_filter_P_5of6': 6, 'exponent_kernel_P_5of6': 5, 'exponent_pool_size_P_5of6': 2, 'conv_frac_P_5of6': 0.30000000000000004, 'pool_type_P_5of6': 'max', 'pool_frac_P_5of6': 0.7, 'exponent_filter_T_0of2': 5, 'exponent_kernel_T_0of2': 2, 'exponent_pool_size_T_0of2': 6, 'conv_frac_T_0of2': 0.5, 'pool_type_T_0of2': 'avrg', 'pool_frac_T_0of2': 0.7, 'exponent_filter_T_1of2': 5, 'exponent_kernel_T_1of2': 3, 'exponent_pool_size_T_1of2': 2, 'conv_frac_T_1of2': 0.0, 'pool_type_T_1of2': 'max', 'pool_frac_T_1of2': 1.0, 'skip_type': 'none', 'exponent_lstm_units_T_0of2': 5, 'exponent_lstm_units_T_1of2': 7, 'ndl': 1, 'exponent_dl_dim_0of1': 3, 'dl_drop_0of1': 0.06766238081567807, 'activation': 'gelu', 'kernel_ini_gelu': 'glorot_normal', 'one_minus_Bnorm_momentum': 0.0823114821546708}, user_attrs={}, system_attrs={'completed_rung_0': 0.5595905780792236, 'completed_rung_1': 0.5083717107772827}, intermediate_values={0: 0.6072716116905212, 1: 0.5595905780792236, 2: 0.720093309879303, 3: 0.5373648405075073, 4: 0.5083717107772827, 5: 0.6182407140731812, 6: 0.6205403804779053, 7: 0.5768770575523376, 8: 0.5859425663948059, 9: 0.6116399168968201}, distributions={'outside': IntDistribution(high=15000, log=False, low=1000, step=1000), 'inside': IntDistribution(high=1500, log=False, low=100, step=100), 'batch_exponent': IntDistribution(high=7, log=False, low=2, step=1), 'use_drop': CategoricalDistribution(choices=(True, False)), 'use_last_layer_drop': CategoricalDistribution(choices=(True, False)), 'ncl_P': IntDistribution(high=6, log=False, low=1, step=1), 'ncl_T': IntDistribution(high=6, log=False, low=1, step=1), 'nlstm_P': IntDistribution(high=2, log=False, low=0, step=1), 'nlstm_T': IntDistribution(high=2, log=False, low=0, step=1), 'use_exp': CategoricalDistribution(choices=(True, False)), 'exponent_filter_P_0of6': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_P_0of6': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_P_0of6': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_P_0of6': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_P_0of6': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_P_0of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_P_1of6': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_P_1of6': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_P_1of6': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_P_1of6': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_P_1of6': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_P_1of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_P_2of6': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_P_2of6': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_P_2of6': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_P_2of6': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_P_2of6': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_P_2of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_P_3of6': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_P_3of6': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_P_3of6': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_P_3of6': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_P_3of6': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_P_3of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_P_4of6': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_P_4of6': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_P_4of6': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_P_4of6': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_P_4of6': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_P_4of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_P_5of6': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_P_5of6': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_P_5of6': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_P_5of6': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_P_5of6': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_P_5of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_T_0of2': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_T_0of2': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_T_0of2': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_T_0of2': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_T_0of2': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_T_0of2': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'exponent_filter_T_1of2': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_kernel_T_1of2': IntDistribution(high=5, log=False, low=2, step=1), 'exponent_pool_size_T_1of2': IntDistribution(high=6, log=False, low=0, step=1), 'conv_frac_T_1of2': FloatDistribution(high=0.5, log=False, low=0.0, step=0.1), 'pool_type_T_1of2': CategoricalDistribution(choices=('max', 'avrg')), 'pool_frac_T_1of2': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'skip_type': CategoricalDistribution(choices=('none', 'add', 'multiply', 'concatenate')), 'exponent_lstm_units_T_0of2': IntDistribution(high=9, log=False, low=5, step=1), 'exponent_lstm_units_T_1of2': IntDistribution(high=9, log=False, low=5, step=1), 'ndl': IntDistribution(high=3, log=False, low=1, step=1), 'exponent_dl_dim_0of1': IntDistribution(high=10, log=False, low=1, step=1), 'dl_drop_0of1': FloatDistribution(high=1.0, log=True, low=1e-06, step=None), 'activation': CategoricalDistribution(choices=('relu', 'leaky_relu', 'selu', 'prelu', 'gelu', 'elu', 'swish', 'softplus', 'mish')), 'kernel_ini_gelu': CategoricalDistribution(choices=('he_normal', 'glorot_normal')), 'one_minus_Bnorm_momentum': FloatDistribution(high=0.4, log=True, low=0.0001, step=None)}, trial_id=698, value=None)
+Value:	0.5083717107772827
+
+HYPERPARAMETERS:
+
+	outside:	5000
+	inside:	1200
+	batch_exponent:	5
+	use_drop:	True
+	use_last_layer_drop:	True
+	ncl_P:	6
+	ncl_T:	2
+	nlstm_P:	0
+	nlstm_T:	2
+	use_exp:	False
+	exponent_filter_P_0of6:	9
+	exponent_kernel_P_0of6:	2
+	exponent_pool_size_P_0of6:	2
+	conv_frac_P_0of6:	0.0
+	pool_type_P_0of6:	max
+	pool_frac_P_0of6:	0.7
+	exponent_filter_P_1of6:	8
+	exponent_kernel_P_1of6:	2
+	exponent_pool_size_P_1of6:	6
+	conv_frac_P_1of6:	0.2
+	pool_type_P_1of6:	avrg
+	pool_frac_P_1of6:	0.5
+	exponent_filter_P_2of6:	7
+	exponent_kernel_P_2of6:	4
+	exponent_pool_size_P_2of6:	1
+	conv_frac_P_2of6:	0.2
+	pool_type_P_2of6:	avrg
+	pool_frac_P_2of6:	1.0
+	exponent_filter_P_3of6:	7
+	exponent_kernel_P_3of6:	2
+	exponent_pool_size_P_3of6:	1
+	conv_frac_P_3of6:	0.5
+	pool_type_P_3of6:	max
+	pool_frac_P_3of6:	0.9
+	exponent_filter_P_4of6:	9
+	exponent_kernel_P_4of6:	5
+	exponent_pool_size_P_4of6:	3
+	conv_frac_P_4of6:	0.5
+	pool_type_P_4of6:	avrg
+	pool_frac_P_4of6:	0.5
+	exponent_filter_P_5of6:	6
+	exponent_kernel_P_5of6:	5
+	exponent_pool_size_P_5of6:	2
+	conv_frac_P_5of6:	0.30000000000000004
+	pool_type_P_5of6:	max
+	pool_frac_P_5of6:	0.7
+	exponent_filter_T_0of2:	5
+	exponent_kernel_T_0of2:	2
+	exponent_pool_size_T_0of2:	6
+	conv_frac_T_0of2:	0.5
+	pool_type_T_0of2:	avrg
+	pool_frac_T_0of2:	0.7
+	exponent_filter_T_1of2:	5
+	exponent_kernel_T_1of2:	3
+	exponent_pool_size_T_1of2:	2
+	conv_frac_T_1of2:	0.0
+	pool_type_T_1of2:	max
+	pool_frac_T_1of2:	1.0
+	skip_type:	none
+	exponent_lstm_units_T_0of2:	5
+	exponent_lstm_units_T_1of2:	7
+	ndl:	1
+	exponent_dl_dim_0of1:	3
+	dl_drop_0of1:	0.06766238081567807
+	activation:	gelu
+	kernel_ini_gelu:	glorot_normal
+	one_minus_Bnorm_momentum:	0.0823114821546708

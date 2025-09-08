@@ -1,0 +1,5 @@
+P_branch	P_params
+T_branch	P_params
+default_conv_stride	True
+default_pool_stride	False
+pooling	avrg

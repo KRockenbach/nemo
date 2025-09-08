@@ -1,0 +1,4 @@
+use_promoter	True
+use_terminator	True
+use_halflife	False
+use_xpresso_optimization	True

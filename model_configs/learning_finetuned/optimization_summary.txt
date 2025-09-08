@@ -1,0 +1,20 @@
+STUDY STATISTICS
+
+Total number of trials:	533
+Number of pruned trials:	0
+Number of complete trials:	511
+Number of failed trials:	21
+Best trial:
+
+FrozenTrial(number=323, state=1, values=[0.5562044978141785], datetime_start=datetime.datetime(2024, 7, 23, 0, 45, 27, 250692), datetime_complete=datetime.datetime(2024, 7, 23, 1, 18, 24, 816967), params={'epochs': 6, 'LR_final_scale': 0.8757807116665555, 'max_lr': 0.04872829743137629, 'min_lr': 0.0012994663859360526, 'max_momentum': 0.927359606261753, 'min_momentum': 0.8899148069769187, 'huber_delta': 2.2961205517405374}, user_attrs={}, system_attrs={}, intermediate_values={}, distributions={'epochs': IntDistribution(high=10, log=True, low=6, step=1), 'LR_final_scale': FloatDistribution(high=0.9, log=False, low=0.0, step=None), 'max_lr': FloatDistribution(high=0.05, log=False, low=0.02965487191709626, step=None), 'min_lr': FloatDistribution(high=0.0014827435958548129, log=False, low=0.0011861948766838503, step=None), 'max_momentum': FloatDistribution(high=0.95, log=False, low=0.9, step=None), 'min_momentum': FloatDistribution(high=0.89, log=False, low=0.83, step=None), 'huber_delta': FloatDistribution(high=13.5, log=True, low=0.135, step=None)}, trial_id=324, value=None)
+Value:	0.5562044978141785
+
+HYPERPARAMETERS:
+
+	epochs:	6
+	LR_final_scale:	0.8757807116665555
+	max_lr:	0.04872829743137629
+	min_lr:	0.0012994663859360526
+	max_momentum:	0.927359606261753
+	min_momentum:	0.8899148069769187
+	huber_delta:	2.2961205517405374

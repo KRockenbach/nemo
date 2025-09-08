@@ -1,0 +1,940 @@
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5346879363059998
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5346879363059998
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5346879363059998
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5346879363059998
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5346879363059998
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5552626252174377
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5552626252174377
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5552626252174377
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5552626252174377
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5552626252174377
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5431075096130371
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5431075096130371
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5431075096130371
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5431075096130371
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5431075096130371
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5594161152839661
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5594161152839661
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5594161152839661
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5594161152839661
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5594161152839661
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5202596783638
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5202596783638
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5202596783638
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5202596783638
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5202596783638
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.6022070050239563
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.6022070050239563
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.6022070050239563
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.6022070050239563
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.6022070050239563
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.544556200504303
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.544556200504303
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.544556200504303
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.544556200504303
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.544556200504303
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5509092211723328
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5509092211723328
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5509092211723328
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5509092211723328
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5509092211723328
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5410172939300537
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5410172939300537
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5410172939300537
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5410172939300537
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5410172939300537
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5244097113609314
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5244097113609314
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5244097113609314
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5244097113609314
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5244097113609314
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5530245304107666
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5530245304107666
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5530245304107666
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5530245304107666
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5530245304107666
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5118555426597595
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5118555426597595
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5118555426597595
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5118555426597595
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5118555426597595
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5875760316848755
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5875760316848755
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5875760316848755
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5875760316848755
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5875760316848755
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5744978785514832
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5744978785514832
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5744978785514832
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5744978785514832
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5744978785514832
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5656173825263977
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5656173825263977
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5656173825263977
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5656173825263977
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5656173825263977
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5724076628684998
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5724076628684998
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5724076628684998
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5724076628684998
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5724076628684998
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5180674195289612
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5180674195289612
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5180674195289612
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5180674195289612
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5180674195289612
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5408636927604675
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5408636927604675
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5408636927604675
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5408636927604675
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5408636927604675
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5585799217224121
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5585799217224121
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5585799217224121
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5585799217224121
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5585799217224121
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5403442978858948
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5403442978858948
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5403442978858948
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5403442978858948
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5403442978858948
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5167315006256104
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5167315006256104
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5167315006256104
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5167315006256104
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5167315006256104
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5665891766548157
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5665891766548157
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5665891766548157
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5665891766548157
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5665891766548157
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5102760195732117
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5102760195732117
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5102760195732117
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5102760195732117
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5102760195732117
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5987364053726196
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5987364053726196
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5987364053726196
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5987364053726196
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5987364053726196
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5692968368530273
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5692968368530273
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5692968368530273
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5692968368530273
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5692968368530273
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.6083906888961792
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.6083906888961792
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.6083906888961792
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.6083906888961792
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.6083906888961792
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5526940822601318
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5526940822601318
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5526940822601318
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5526940822601318
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5526940822601318
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5167462229728699
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5167462229728699
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5167462229728699
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5167462229728699
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5167462229728699
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.595420777797699
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.595420777797699
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.595420777797699
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.595420777797699
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.595420777797699
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5512354969978333
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5512354969978333
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5512354969978333
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5512354969978333
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5512354969978333
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5958965420722961
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5958965420722961
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5958965420722961
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5958965420722961
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5958965420722961
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5165086388587952
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5165086388587952
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5165086388587952
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5165086388587952
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5165086388587952
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.534778892993927
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.534778892993927
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.534778892993927
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.534778892993927
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.534778892993927
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.49198323488235474
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.49198323488235474
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.49198323488235474
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.49198323488235474
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.49198323488235474
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5535967350006104
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5535967350006104
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5535967350006104
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5535967350006104
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5535967350006104
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5168988108634949
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5168988108634949
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5168988108634949
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5168988108634949
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5168988108634949
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5303329825401306
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5303329825401306
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5303329825401306
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5303329825401306
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5303329825401306
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5251762270927429
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5251762270927429
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5251762270927429
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5251762270927429
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5251762270927429
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5507403612136841
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5507403612136841
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5507403612136841
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5507403612136841
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5507403612136841
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5359382033348083
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5359382033348083
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5359382033348083
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.5359382033348083
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5359382033348083
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.5297768115997314
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5297768115997314
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5297768115997314
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5297768115997314
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5297768115997314
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5206999182701111
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.5206999182701111
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5206999182701111
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5206999182701111
+
++++++++++++++++++++++++++	pooling:	avrg
+
+Score: 0.5206999182701111
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.577875018119812
+
++++++++++++++++++++++++++	T_branch:	P_params
+
+Score: 0.577875018119812
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.577875018119812
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.577875018119812
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.577875018119812
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5244277119636536
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5244277119636536
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.5244277119636536
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5244277119636536
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.5244277119636536
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.5541587471961975
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.5541587471961975
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.5541587471961975
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.5541587471961975
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.5541587471961975
+
++++++++++++++++++++++++++	P_branch:	T_params
+
+Score: 0.555172324180603
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.555172324180603
+
++++++++++++++++++++++++++	default_conv_stride:	False
+
+Score: 0.555172324180603
+
++++++++++++++++++++++++++	default_pool_stride:	False
+
+Score: 0.555172324180603
+
++++++++++++++++++++++++++	pooling:	optimized
+
+Score: 0.555172324180603
+
++++++++++++++++++++++++++	P_branch:	P_params
+
+Score: 0.568149209022522
+
++++++++++++++++++++++++++	T_branch:	T_params
+
+Score: 0.568149209022522
+
++++++++++++++++++++++++++	default_conv_stride:	True
+
+Score: 0.568149209022522
+
++++++++++++++++++++++++++	default_pool_stride:	True
+
+Score: 0.568149209022522
+
++++++++++++++++++++++++++	pooling:	max
+
+Score: 0.568149209022522
+

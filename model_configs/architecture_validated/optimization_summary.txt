@@ -1,0 +1,18 @@
+STUDY STATISTICS
+
+Total number of trials:	49
+Number of pruned trials:	0
+Number of complete trials:	47
+Number of failed trials:	2
+Best trial:
+
+FrozenTrial(number=33, state=1, values=[0.49198323488235474], datetime_start=datetime.datetime(2024, 6, 6, 4, 15, 45, 496762), datetime_complete=datetime.datetime(2024, 6, 6, 5, 6, 44, 523982), params={'P_branch': 'P_params', 'T_branch': 'P_params', 'default_conv_stride': True, 'default_pool_stride': False, 'pooling': 'avrg'}, user_attrs={}, system_attrs={'grid_id': 33, 'search_space': {'P_branch': ['P_params', 'T_params'], 'T_branch': ['P_params', 'T_params'], 'default_conv_stride': [True, False], 'default_pool_stride': [True, False], 'pooling': ['optimized', 'avrg', 'max']}}, intermediate_values={0: 1.3418959379196167, 1: 0.6652715802192688, 2: 0.5529072284698486, 3: 0.5515963435173035, 4: 0.5246810913085938, 5: 0.5291922092437744, 6: 0.5816515684127808, 7: 0.49198323488235474, 8: 0.5218806266784668, 9: 0.5471431612968445}, distributions={'P_branch': CategoricalDistribution(choices=('P_params', 'T_params')), 'T_branch': CategoricalDistribution(choices=('P_params', 'T_params')), 'default_conv_stride': CategoricalDistribution(choices=(True, False)), 'default_pool_stride': CategoricalDistribution(choices=(True, False)), 'pooling': CategoricalDistribution(choices=('optimized', 'avrg', 'max'))}, trial_id=34, value=None)
+Value:	0.49198323488235474
+
+HYPERPARAMETERS:
+
+	P_branch:	P_params
+	T_branch:	P_params
+	default_conv_stride:	True
+	default_pool_stride:	False
+	pooling:	avrg

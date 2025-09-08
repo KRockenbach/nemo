@@ -1,0 +1,55 @@
+STUDY STATISTICS
+
+Total number of trials:	1110
+Number of pruned trials:	966
+Number of complete trials:	135
+Number of failed trials:	8
+Best trial:
+
+FrozenTrial(number=1056, state=1, values=[0.4686211347579956], datetime_start=datetime.datetime(2024, 6, 15, 23, 56, 35, 466409), datetime_complete=datetime.datetime(2024, 6, 16, 0, 28, 23, 190023), params={'batch_size': 18, 'filter_P_0of6': 288, 'kernel_P_0of6': 5, 'filter_P_1of6': 106, 'kernel_P_1of6': 8, 'filter_P_2of6': 227, 'kernel_P_2of6': 9, 'filter_P_3of6': 187, 'kernel_P_3of6': 10, 'filter_P_4of6': 64, 'kernel_P_4of6': 46, 'kernel_P_5of6': 62, 'filter_T_0of6': 219, 'kernel_T_0of6': 4, 'filter_T_1of6': 449, 'kernel_T_1of6': 4, 'filter_T_2of6': 259, 'kernel_T_2of6': 16, 'filter_T_3of6': 154, 'kernel_T_3of6': 15, 'filter_T_4of6': 105, 'kernel_T_4of6': 20, 'kernel_T_5of6': 22, 'use_cb_lstm': False, 'ndl': 2, 'dl_dim_0of2': 750, 'dl_dim_1of2': 3, 'dl_drop_1of2': 0.010633947812632601, 'one_minus_Bnorm_momentum': 0.15784005184231675, 'pool_size_P_0of6': 1, 'pool_frac_P_0of6': 0.6, 'pool_size_P_1of6': 21, 'pool_frac_P_1of6': 0.7, 'pool_size_P_2of6': 1, 'pool_frac_P_2of6': 0.8, 'pool_size_P_3of6': 1, 'pool_frac_P_3of6': 0.6, 'pool_size_P_4of6': 18, 'pool_frac_P_4of6': 0.7, 'pool_size_P_5of6': 8, 'pool_frac_P_5of6': 0.7, 'filter_P_5of6': 152}, user_attrs={}, system_attrs={'completed_rung_0': 0.5347116589546204, 'completed_rung_1': 0.4686211347579956}, intermediate_values={0: 0.5851067900657654, 1: 0.5347116589546204, 2: 0.515777051448822, 3: 0.5046423673629761, 4: 0.4686211347579956}, distributions={'batch_size': IntDistribution(high=32, log=True, low=16, step=1), 'filter_P_0of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_P_0of6': IntDistribution(high=8, log=True, low=2, step=1), 'filter_P_1of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_P_1of6': IntDistribution(high=8, log=True, low=2, step=1), 'filter_P_2of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_P_2of6': IntDistribution(high=16, log=True, low=4, step=1), 'filter_P_3of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_P_3of6': IntDistribution(high=16, log=True, low=4, step=1), 'filter_P_4of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_P_4of6': IntDistribution(high=64, log=True, low=16, step=1), 'kernel_P_5of6': IntDistribution(high=64, log=True, low=16, step=1), 'filter_T_0of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_T_0of6': IntDistribution(high=8, log=True, low=2, step=1), 'filter_T_1of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_T_1of6': IntDistribution(high=8, log=True, low=2, step=1), 'filter_T_2of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_T_2of6': IntDistribution(high=16, log=True, low=4, step=1), 'filter_T_3of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_T_3of6': IntDistribution(high=16, log=True, low=4, step=1), 'filter_T_4of6': IntDistribution(high=512, log=True, low=64, step=1), 'kernel_T_4of6': IntDistribution(high=64, log=True, low=16, step=1), 'kernel_T_5of6': IntDistribution(high=64, log=True, low=16, step=1), 'use_cb_lstm': CategoricalDistribution(choices=(True, False)), 'ndl': IntDistribution(high=2, log=False, low=1, step=1), 'dl_dim_0of2': IntDistribution(high=1024, log=True, low=8, step=1), 'dl_dim_1of2': IntDistribution(high=8, log=True, low=2, step=1), 'dl_drop_1of2': FloatDistribution(high=0.5, log=True, low=0.005, step=None), 'one_minus_Bnorm_momentum': FloatDistribution(high=0.2, log=True, low=0.01, step=None), 'pool_size_P_0of6': IntDistribution(high=64, log=True, low=1, step=1), 'pool_frac_P_0of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'pool_size_P_1of6': IntDistribution(high=64, log=True, low=1, step=1), 'pool_frac_P_1of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'pool_size_P_2of6': IntDistribution(high=64, log=True, low=1, step=1), 'pool_frac_P_2of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'pool_size_P_3of6': IntDistribution(high=64, log=True, low=1, step=1), 'pool_frac_P_3of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'pool_size_P_4of6': IntDistribution(high=64, log=True, low=1, step=1), 'pool_frac_P_4of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'pool_size_P_5of6': IntDistribution(high=64, log=True, low=1, step=1), 'pool_frac_P_5of6': FloatDistribution(high=1.0, log=False, low=0.5, step=0.1), 'filter_P_5of6': IntDistribution(high=512, log=True, low=64, step=1)}, trial_id=1057, value=None)
+Value:	0.4686211347579956
+
+HYPERPARAMETERS:
+
+	batch_size:	18
+	filter_P_0of6:	288
+	kernel_P_0of6:	5
+	filter_P_1of6:	106
+	kernel_P_1of6:	8
+	filter_P_2of6:	227
+	kernel_P_2of6:	9
+	filter_P_3of6:	187
+	kernel_P_3of6:	10
+	filter_P_4of6:	64
+	kernel_P_4of6:	46
+	kernel_P_5of6:	62
+	filter_T_0of6:	219
+	kernel_T_0of6:	4
+	filter_T_1of6:	449
+	kernel_T_1of6:	4
+	filter_T_2of6:	259
+	kernel_T_2of6:	16
+	filter_T_3of6:	154
+	kernel_T_3of6:	15
+	filter_T_4of6:	105
+	kernel_T_4of6:	20
+	kernel_T_5of6:	22
+	use_cb_lstm:	False
+	ndl:	2
+	dl_dim_0of2:	750
+	dl_dim_1of2:	3
+	dl_drop_1of2:	0.010633947812632601
+	one_minus_Bnorm_momentum:	0.15784005184231675
+	pool_size_P_0of6:	1
+	pool_frac_P_0of6:	0.6
+	pool_size_P_1of6:	21
+	pool_frac_P_1of6:	0.7
+	pool_size_P_2of6:	1
+	pool_frac_P_2of6:	0.8
+	pool_size_P_3of6:	1
+	pool_frac_P_3of6:	0.6
+	pool_size_P_4of6:	18
+	pool_frac_P_4of6:	0.7
+	pool_size_P_5of6:	8
+	pool_frac_P_5of6:	0.7
+	filter_P_5of6:	152
