@@ -330,6 +330,20 @@ def get_set(config, outP=15000, inP=5000, outT=15000, inT=5000, datadir="../data
 
 
 ######################
+def get_set4pred(datadir="../validation/ZS11/data"):
+
+    data_dict = {}
+    path = os.path.join(datadir, 'full.feather')
+    table=pd.read_feather(path)
+
+    data_dict["promoter"] = one_hot(table.loc[:,'PROMOTER'].str.slice(start=0,stop=6200))
+    data_dict["terminator"] = one_hot(table.loc[:,'TERMINATOR'].str.slice(start=0,stop=6200))
+    data_dict["ID"] = pd.Series(table.index).to_numpy(dtype=int)
+
+    return(data_dict)
+
+
+######################
 def build_model(params, train, input_names=["promoter", "terminator"]):
 
     # Define Hyperparameters

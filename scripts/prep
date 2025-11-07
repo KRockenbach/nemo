@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+
+
+#========================================================================================================
+#title: prep.sh
+#description: Initial reformatting, standardization and preprocessing of data
+#author: Kevin Rockenbach
+#email: kevin.rockenbach@ag.uni-giessen.de
+#date: 2025-10-27
+#version: 1.0.0
+#usage: bash prep.sh -f|--fasta <GENOME_FASTA> -g|--gff <GENOME_GFF> -e|--expression <EXPRESSION_MATRIX> -s|--species <SPECIES> -o|--outdir <OUTPUT_DIRECTORY> -l|--genelist <GENE_LIST: all>
+#notes: The expression matrix must have the following format:
+#            - It must be tab separated
+#            - It must have a header with "Gene\tSample_Name_1\tSample_Name_2\t...
+#            - The first column contains gene names (type=string)
+#            - All other columns contain TPM expression values for the respective sample (type=float)
+#=========================================================================================================
+
+LIST="all"
+TRANSCRIPT="False"
+
+VALID_ARGS=$(getopt -o f:g:e:s:o:l:t:h --long fasta:,gff:,outdir:,genelist:,transcript:,help -- "$@")
+if [[ $? -ne 0 ]]; then
+    exit 1;
+fi
+
+eval set -- "$VALID_ARGS"
+while [ : ]; do
+  case "$1" in
+    -f | --fasta)
+        FASTA_IN=$2
+        shift 2
+        ;;
+    -g | --gff)
+        GFF_IN=$2
+        shift 2
+        ;;
+    -o | --outdir)
+        OUTDIR=$2
+        shift 2
+        ;;
+    -l | --genelist)
+        LIST=$2
+        shift 2
+        ;;
+    -t | --transcript)
+        TRANSCRIPT="True"
+        shift 1
+        ;;
+    -h | --help)
+        echo "Usage: $(basename $0) [-f | --fasta arg] [-g | --gff arg] [-o | --outdir arg] [-l | --outdir arg; default: all] [-t | --transcript]"
+        exit 1
+        ;;
+    --) shift;
+        break
+        ;;
+  esac
+done
+
+source $CONDA_PREFIX/etc/profile.d/mamba.sh
+source $CONDA_PREFIX/etc/profile.d/conda.sh
+
+mamba activate prep
+
+mkdir -p $OUTDIR
+
+echo $FASTA_IN
+
+cp $FASTA_IN ${OUTDIR}"/genome.fasta"
+cp $GFF_IN ${OUTDIR}"/genes.gff"
+
+GENOME_FASTA=${OUTDIR}"/genome.fasta"  ##########
+GENOME_GFF=${OUTDIR}"/genes.gff"       ##########
+
+RNR=$RANDOM
+
+if [[ $TRANSCRIPT == "True" ]]; then
+    awk 'toupper($3) ~/(CDS|EXON|MRNA|TRANSCRIPT|GENE|UTR)/ {print $0}' "$GENOME_GFF" > "${OUTDIR}/tmp_${RNR}.gff" \
+    && rm $GENOME_GFF \
+    && cat ${OUTDIR}/tmp_${RNR}.gff > $GENOME_GFF \
+    && rm "${OUTDIR}/tmp_${RNR}.gff" \
+    || echo "Sanitization of GFF failed!"
+else
+    awk 'toupper($3) ~/(CDS|EXON|MRNA|TRANSCRIPT|GENE|UTR)/ {print $0}' "$GENOME_GFF" > "${OUTDIR}/tmp_${RNR}.gff" \
+    && rm $GENOME_GFF \
+    && agat_sp_keep_longest_isoform.pl -gff "${OUTDIR}/tmp_${RNR}.gff" -o $GENOME_GFF 1> ${OUTDIR}/agat.std 2> ${OUTDIR}/agat.err \
+    && rm "${OUTDIR}/tmp_${RNR}.gff" \
+    || echo "Sanitization of GFF failed!"
+fi
+
+## select subset of genes
+if [[ $LIST != "all" ]]; then
+    agat_sp_filter_feature_from_keep_list.pl --gff "$GENOME_GFF" --keep_list "$LIST" --output "${OUTDIR}/tmp_${RNR}.gff" 1> ${OUTDIR}/agat.std 2> ${OUTDIR}/agat.err
+    cat "${OUTDIR}/tmp_${RNR}.gff" > "$GENOME_GFF"
+    rm "${OUTDIR}/tmp_${RNR}.gff"
+fi
+
+bash nemo/preprocessing/multiline_to_singleline_fasta.sh $GENOME_FASTA tmp_${RNR}.fa \
+&& cat tmp_${RNR}.fa > $GENOME_FASTA \
+&& rm tmp_${RNR}.fa \
+|| echo "Single-line conversion failed!"
+
+GENOME_FAI=$(echo $GENOME_FASTA | sed 's/\.fasta$/\.fasta.fai/') ###########
+samtools faidx -n 0 -o $GENOME_FAI $GENOME_FASTA
+
+CDS_GFF=$(echo $GENOME_GFF | sed 's/.gff$/.CDS.gff/')
+MASKED_FASTA=$(echo $GENOME_FASTA | sed 's/\.fasta$/\.masked.fasta/')
+awk '$3=="CDS" {print $0}' $GENOME_GFF > $CDS_GFF
+
+echo "Masking annotated CDS sequences from assembly"
+# bedtools accepts GFF files
+bedtools maskfasta -fi $GENOME_FASTA -bed $CDS_GFF -fo $MASKED_FASTA 1> ${OUTDIR}/bedtools.maskfasta.std 2> ${OUTDIR}/bedtools.maskfasta.err
+
+echo "Defining sequence interval bed files..."
+PROM_BED=${OUTDIR}"/promoters.bed"
+TERM_BED=${OUTDIR}"/terminators.bed"
+echo "Saving interval coordinates under $PROM_BED and $TERM_BED"
+# $1 = outside interval; $2 = inside interval
+python3 nemo/preprocessing/get_promoter_terminator.py 5000 1200 \
+    $GENOME_FAI $GENOME_GFF mRNA $OUTDIR
+PROM=$(echo $PROM_BED | sed 's/.bed/.fasta/')
+TERM=$(echo $TERM_BED | sed 's/.bed/.fasta/')
+bedtools getfasta -fi $MASKED_FASTA -bed $PROM_BED -name -s | sed 's/(-)//' | sed 's/(+)//' 1> $PROM 2> ${OUTDIR}/bedtools.getfasta.term.err
+bedtools getfasta -fi $MASKED_FASTA -bed $TERM_BED -name -s | sed 's/(-)//' | sed 's/(+)//' 1> $TERM 2> ${OUTDIR}/bedtools.getfasta.prom.err
+
+python3 nemo/preprocessing/merge_validation.py $OUTDIR $PROM $TERM $TRANSCRIPT
+
+echo "Compressing data"
+## compress merged data
+gzip ${OUTDIR}/merged.data
+
+python3 nemo/preprocessing/setup_full.py ${OUTDIR}/merged.data.gz ${OUTDIR}
+
+mamba deactivate
+
+
+#### clean up
+
+rm -f tmp_${RNR}* ${OUTDIR}/tmp_${RNR}* $GENOME_FASTA $GENOME_GFF $MASKED_FASTA $CDS_GFF $GENOME_FAI $PROM_BED $TERM_BED $PROM $TERM ${OUTDIR}"/merged.data.gz"
+
+
