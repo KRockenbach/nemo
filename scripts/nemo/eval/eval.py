@@ -33,8 +33,8 @@ title: eval.py
 description: makes predictions using trained model on corresponding test set
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2025-08-28
-version: 1.0.0
+date: 2026-01-05
+version: 1.0.1
 usage: python -m nemo.eval.eval <directory containing data folds> <directory containing the model weights>
 notes: run within nemo environment
 =========================================================================================================
@@ -53,15 +53,18 @@ from sklearn.preprocessing import StandardScaler
 from ..utils.model_utils import *
 
 
-def randomize_sequence(seq):
-    print(f"randomizing sequences with length {seq.shape[1]}")
+def randomize_sequence(seq, segment="upstream", first_downstream_pos="5000"):
     rand_seq = np.zeros_like(seq)
-    print(rand_seq.shape)
-    for j in range(seq.shape[0]):
+    for j in range(0,first_downstream_pos): # seq.shape[0]
         for i in range(seq.shape[1]):
-            if seq[j,i,:].sum() == 1:
+            if seq[j,i,:].sum() == 1 and segment=="upstream" and j < first_downstream_pos:
                 base = choice(range(4))
                 rand_seq[j,i,base] = 1
+            elif seq[j,i,:].sum() == 1 and segment=="downstream" and j >= first_downstream_pos:
+                base = choice(range(4))
+                rand_seq[j,i,base] = 1
+            else:
+                rand_seq[j,i,:] = seq[j,i,:]
     assert(rand_seq.sum() > 0)
     assert(rand_seq.sum() <= (seq.shape[0]*seq.shape[1]))
     return rand_seq
@@ -153,32 +156,42 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
     # get list of input data
     inputs = []
     if randomize:
-        rand_prom_inputs = []
-        rand_term_inputs = []
+        rand_prom_up_inputs = []
+        rand_term_up_inputs = []
+        rand_prom_down_inputs = []
+        rand_term_down_inputs = []
     for name in input_names:
         exec("inputs.append(" + name + ")")
         if name == "promoter" and randomize:
-            rand_prom_inputs.append(randomize_sequence(test["promoter"]))
+            rand_prom_up_inputs.append(randomize_sequence(test["promoter"], segment="upstream", first_downstream_pos="5000"))
+            rand_prom_down_inputs.append(randomize_sequence(test["promoter"], segment="downstream", first_downstream_pos="5000"))
         elif randomize:
-            exec("rand_prom_inputs.append(" + name + ")")
+            exec("rand_prom_up_inputs.append(" + name + ")")
+            exec("rand_prom_down_inputs.append(" + name + ")")
         if name == "terminator" and randomize:
-            rand_term_inputs.append(randomize_sequence(test["terminator"]))
+            rand_term_up_inputs.append(randomize_sequence(test["terminator"], segment="upstream", first_downstream_pos="1200"))
+            rand_term_down_inputs.append(randomize_sequence(test["terminator"], segment="downstream", first_downstream_pos="1200"))
         elif randomize:
-            exec("rand_term_inputs.append(" + name + ")")
+            exec("rand_term_up_inputs.append(" + name + ")")
+            exec("rand_term_down_inputs.append(" + name + ")")
 
     # get regression predictions
     preds = model.predict(inputs, batch_size=batch)
     if randomize:
-        rand_prom_preds = model.predict(rand_prom_inputs, batch_size=batch)
-        rand_term_preds = model.predict(rand_term_inputs, batch_size=batch)
+        rand_prom_up_preds = model.predict(rand_prom_up_inputs, batch_size=batch)
+        rand_term_up_preds = model.predict(rand_term_up_inputs, batch_size=batch)
+        rand_prom_down_preds = model.predict(rand_prom_down_inputs, batch_size=batch)
+        rand_term_down_preds = model.predict(rand_term_down_inputs, batch_size=batch)
 
     # perform inverse transformation
-    n_outputs = 1
+    n_outputs = 3
     x = scaler.inverse_transform(test["output"].reshape(-1,n_outputs))  #scaler expects 2D-array
     y = scaler.inverse_transform(preds.reshape(-1,n_outputs))
     if randomize:
-        rand_prom_y = scaler.inverse_transform(rand_prom_preds.reshape(-1,n_outputs))
-        rand_term_y = scaler.inverse_transform(rand_term_preds.reshape(-1,n_outputs))
+        rand_prom_up_y = scaler.inverse_transform(rand_prom_up_preds.reshape(-1,n_outputs))
+        rand_term_up_y = scaler.inverse_transform(rand_term_up_preds.reshape(-1,n_outputs))
+        rand_prom_down_y = scaler.inverse_transform(rand_prom_down_preds.reshape(-1,n_outputs))
+        rand_term_down_y = scaler.inverse_transform(rand_term_down_preds.reshape(-1,n_outputs))
 
 
     gene_names = translate_IDs(test["ID"], datadir)
@@ -205,20 +218,33 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
     print(f"saved predicted values to {f_out}")
 
     if randomize: # N is not None
-        mat = np.column_stack((gene_names, rand_prom_y))
+        mat = np.column_stack((gene_names, rand_prom_up_y))
         df = pd.DataFrame(mat, columns=colnames)
-        f_out = os.path.join(outdir, f'rand_prom_predictions.t_{str(test_fold)}_v_{valid_fold}_n_{N}.txt')
+        f_out = os.path.join(outdir, f'rand_prom_up_predictions.t_{str(test_fold)}_v_{valid_fold}_n_{N}.txt')
         # only one training rep per fold configuration, no further selection necessary
         df.to_csv(f_out, index=False, header=True, sep='\t')
         print(f"saved predicted values to {f_out}")
 
-        mat = np.column_stack((gene_names, rand_term_y))
+        mat = np.column_stack((gene_names, rand_prom_down_y))
         df = pd.DataFrame(mat, columns=colnames)
-        f_out = os.path.join(outdir, f'rand_term_predictions.t_{str(test_fold)}_v_{valid_fold}_n_{N}.txt')
+        f_out = os.path.join(outdir, f'rand_prom_down_predictions.t_{str(test_fold)}_v_{valid_fold}_n_{N}.txt')
         # only one training rep per fold configuration, no further selection necessary
         df.to_csv(f_out, index=False, header=True, sep='\t')
         print(f"saved predicted values to {f_out}")
 
+        mat = np.column_stack((gene_names, rand_term_up_y))
+        df = pd.DataFrame(mat, columns=colnames)
+        f_out = os.path.join(outdir, f'rand_term_up_predictions.t_{str(test_fold)}_v_{valid_fold}_n_{N}.txt')
+        # only one training rep per fold configuration, no further selection necessary
+        df.to_csv(f_out, index=False, header=True, sep='\t')
+        print(f"saved predicted values to {f_out}")
+
+        mat = np.column_stack((gene_names, rand_term_down_y))
+        df = pd.DataFrame(mat, columns=colnames)
+        f_out = os.path.join(outdir, f'rand_term_down_predictions.t_{str(test_fold)}_v_{valid_fold}_n_{N}.txt')
+        # only one training rep per fold configuration, no further selection necessary
+        df.to_csv(f_out, index=False, header=True, sep='\t')
+        print(f"saved predicted values to {f_out}")
 
 
 ###################
@@ -289,7 +315,7 @@ if partitioning == "graphpart" and masking == "masked" and modelname == "nemo":
 
     # perform inverse transformation
     print(test["output"].shape)
-    n_outputs = 1
+    n_outputs = 3
     x = scaler.inverse_transform(test["output"].reshape(-1,n_outputs))  #scaler expects 2D-array
     y = scaler.inverse_transform(preds.reshape(-1,n_outputs))
 
