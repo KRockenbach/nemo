@@ -32,8 +32,8 @@
 #description: Initial reformatting, standardization and preprocessing of A. thaliana data
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-01-08
+#version: 1.0.1
 #usage: bash prep_Athaliana.sh
 #notes: intended to be called from within run_setup.sh
 #       when running directly from command line, first activate prep environment

@@ -34,7 +34,7 @@ description: sets up training folds in feather format, also fits and applies sca
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
 date: 2026-01-08
-version: 2.0.1
+version: 2.0.0
 usage:
       python nemo/preprocessing/setup_folds.py <merged_data> <output_directory> <TSV with gene names and gene indices> <graphpart_output> <masking> <species>
 =========================================================================================================

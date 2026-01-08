@@ -33,8 +33,8 @@ title: setup_full.py
 description: sets up full training set for training nemo100, also fits and applies scalers and performs log transform
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2025-08-28
-version: 1.0.0
+date: 2026-01-08
+version: 1.0.1
 usage:
       python nemo/preprocessing/setup_full.py <merged_data> <output_directory>
 =========================================================================================================

@@ -32,8 +32,8 @@
 #description: runs the entire preprocessing pipeline, partitions data, sets up training files and fits scalers
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-01-08
+#version: 1.0.1
 #usage: bash run_setup.sh
 #=========================================================================================================
 
