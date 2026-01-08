@@ -33,8 +33,8 @@ title: get_merge_validation.py
 description: merges all data needed for prediction into a single file, also sequences intervals that are not fully contained on chromosome are padded
 author: Agnieszka Golicz / Kevin Rockenbach
 email: agnieszka.golicz@agrar.uni-giessen.de / kevin.rockenbach@ag.uni-giessen.de
-date: 2025-11-01
-version: 1.0.0
+date: 2026-01-08
+version: 1.0.1
 usage:
       python nemo/preprocessing/merge_data.py <data_directory> <FASTA with promoter sequences> <FASTA with terminator sequences>
 =========================================================================================================
@@ -45,14 +45,18 @@ from Bio import SeqIO
 import pandas as pd
 import numpy as np
 
+num_outputs = 5
 
 datadir=sys.argv[1]
 # set up dictionaries
 
 
-### TODO make downstream not depend on MEDIAN_EXPRESSION in data set
-h=["GENEID", "MEDIAN_EXPRESSION", "PROMOTER", "TERMINATOR"]
-
+if num_outputs = 1:
+    h=["GENEID", "MEDIAN_EXPRESSION", "PROMOTER", "TERMINATOR"]
+elif num_outputs = 3:
+    h=["GENEID", "MINIMUM_EXPRESSION", "MEDIAN_EXPRESSION", "MAXIMUM_EXPRESSION", "PROMOTER", "TERMINATOR"]
+else:
+    h=["GENEID", "MINIMUM_EXPRESSION", "FIRST_QUARTILE_EXPRESSION", "MEDIAN_EXPRESSION", "THIRD_QUARTILE_EXPRESSION", "MAXIMUM_EXPRESSION", "PROMOTER", "TERMINATOR"]
 
 ###################################
 merged_data_path = os.path.join(datadir, 'merged.data')
@@ -154,7 +158,8 @@ for prom, term in zip(SeqIO.parse(prom_path, "fasta"), SeqIO.parse(term_path, "f
 
     try:
 
-        p = [str(0), str(prom.seq), str(term.seq)]
+        p = [str(0) for _ in range(num_outputs)] # placeholder, since only sequences are needed to make predictions
+        p.extend([str(prom.seq), str(term.seq)])
 
         f = open(merged_data_path, 'a')
         f.write(str(gin)+'\t'+ '\t'.join(p) + '\n')

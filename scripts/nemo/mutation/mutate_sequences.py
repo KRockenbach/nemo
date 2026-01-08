@@ -33,9 +33,9 @@ title: mutate_sequences.py
 description: creates pwm from pfm and motifs from pwm, inserts motif into sequence and makes predictions on mutated sequences
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2026-01-05
-version: 1.0.1
-usage: python -m nemo.mutation.mutate_sequences <path to pwm of TF> <species> <path to file containing gene IDs associated with TF family> <TF family name>
+date: 2026-01-07
+version: 2.0.0
+usage: python -m nemo.mutation.mutate_sequences [-p|--pwm_path <path to pwm of TF>] [-o|--organism <species>] [-a|--associated_IDs <path to file containing gene IDs associated with TF family>] [-f|TF_family <TF family name>] [-m|--modelname <name of model>]
 notes: run within nemo environment
 =========================================================================================================
 '''
@@ -43,31 +43,14 @@ notes: run within nemo environment
 import sys, os
 import numpy as np
 import pandas as pd
-from ..utils.model_utils import one_hot, build_nemo
+import ..utils.model_utils as utils #one_hot, build_nemo, dict_from_tsv
 from pickle import load
 from tqdm import tqdm
 from random import sample, choice, shuffle
+from argparse import ArgumentParser
 
 
-pwm_path = sys.argv[1]
-organism = sys.argv[2]
-TF_family_ID_path = sys.argv[3]
-family = sys.argv[4]
-n_insert=20
-results = os.path.join("..", "results", "nemo", organism, "masked_graphpart")
-
-high_path = os.path.join(results, "IDs/expression/high_expr_ids.lst")
-medium_path = os.path.join(results, "IDs/expression/medium_expr_ids.lst")
-low_path = os.path.join(results, "IDs/expression/low_expr_ids.lst")
-
-outdir = os.path.join(results, f"{family}_insertion")
-os.makedirs(outdir, exist_ok=True)
-initial = organism[0].upper()
-original_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.full.txt")
-
-
-
-def insert_motifs(pwm_path, organism, group_path_list, n_insert):
+def insert_motifs(pwm_path, organism, group_path_list, n_insert, results):
 
     prom_path = os.path.join(results, "attribs/promoter_seqs_GradientExplainer.full.npz")
     term_path = os.path.join(results, "attribs/terminator_seqs_GradientExplainer.full.npz")
@@ -147,7 +130,7 @@ def insert_motifs(pwm_path, organism, group_path_list, n_insert):
         list_of_motif_lists = generate_motif_list()
         df_list = []
         for motif_type, motif_list in zip(["TFBS", "scrambled", "random"], list_of_motif_lists):
-            motifs = one_hot(pd.Series(motif_list)) # new set of probabilistically generated motifs for each sequence
+            motifs = utils.one_hot(pd.Series(motif_list)) # new set of probabilistically generated motifs for each sequence
             for j in range(n_insert):
                 motif_type_lst.append(motif_type)
                 to_insert=motifs[j,:,:]
@@ -199,12 +182,18 @@ def insert_motifs(pwm_path, organism, group_path_list, n_insert):
 
 
 
-def make_predictions(organism, mutated_prom, original_prom, mutated_term, original_term):
+def make_predictions(organism, modelname, mutated_prom, original_prom, mutated_term, original_term):
 
-    weights = os.path.join("..", "model_weights", "nemo", organism, "masked_graphpart")
-    model_weights = os.path.join(weights, "nemo_full.h5")
+    rootdir=".."
+    modeldir = os.path.join(rootdir, "model_configs", modelname)
+    conf_path = os.path.join(modeldir, "config.tsv")
+    config = utils.dict_from_tsv(conf_path)
 
-    model = build_nemo()
+    weights = os.path.join("..", "model_weights", modelname, organism, "masked_graphpart")
+    model_weights = os.path.join(weights, f"{modelname}_full.h5")
+
+    model = None
+    exec(f"model = utils.build_{modelname}()")
     model.load_weights(model_weights)
     # get list of input names
     input_names = ["promoter", "terminator"]
@@ -223,7 +212,7 @@ def make_predictions(organism, mutated_prom, original_prom, mutated_term, origin
     scaler = load(open(scaler_path, 'rb'))
 
     # perform inverse transformation
-    n_outputs=3 ###
+    n_outputs = int(config["num_outputs"])
     prom_mut_preds = scaler.inverse_transform(prom_mut_preds.reshape(-1,n_outputs))  #scaler expects 2D-array
     term_mut_preds = scaler.inverse_transform(term_mut_preds.reshape(-1,n_outputs))
     return prom_mut_preds, term_mut_preds
@@ -233,12 +222,39 @@ def add_original_preds(df, original_pred_path):
     pred_df = pd.read_csv(original_pred_path, delimiter="\t", header=0, index_col=False)
     baseline = []
     for name in df["parent_name"].tolist():
+        # TODO extend for min and max expression
         baseline.append(pred_df.loc[pred_df["Gene"] == name, "Median_Expression"].iloc[0])
     df["baseline"] = baseline
     return df
 
 
-for exp_group in ["medium"]: #["high", "medium", "low"]:
+def main():
+    parser = argparse.ArgumentParser(
+                    prog='mutate_sequences.py',
+                    description='This program inserts motifs into promoter and terminator sequences and predicts expression on the mutated sequences',
+                    epilog='')
+    parser.add_argument('-p', '--pwm_path')
+    parser.add_argument('-o', '--organism', default='Bnapus')
+    parser.add_argument('-a', '--associated_IDs')
+    TF_family_ID_path = parser.associated_IDs
+    parser.add_argument('-f', '--TF_family')
+    parser.add_argument('-m', '--modelname', default='nemo')
+    n_insert=20
+    results = os.path.join("..", "results", parser.modelname, parser.organism, "masked_graphpart")
+
+
+    high_path = os.path.join(results, "IDs/expression/high_expr_ids.lst")
+    medium_path = os.path.join(results, "IDs/expression/medium_expr_ids.lst")
+    low_path = os.path.join(results, "IDs/expression/low_expr_ids.lst")
+
+    outdir = os.path.join(results, f"{parser.TF_family}_insertion")
+    os.makedirs(outdir, exist_ok=True)
+    initial = parser.organism[0].upper()
+    original_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.full.txt")
+
+
+
+    for exp_group in ["medium"]: #["high", "medium", "low"]:
     if exp_group=="high":
         group_path_list = [medium_path, low_path] # groups to exclude
     elif exp_group=="medium":
@@ -247,14 +263,17 @@ for exp_group in ["medium"]: #["high", "medium", "low"]:
         group_path_list = [high_path, medium_path]
     group_path_list.append(TF_family_ID_path)
 
-    df, mutated_prom, original_term, original_prom, mutated_term = insert_motifs(pwm_path, organism, group_path_list, n_insert)
-    prom_mut_preds, term_mut_preds = make_predictions(organism, mutated_prom, original_prom, mutated_term, original_term)
+    df, mutated_prom, original_term, original_prom, mutated_term = insert_motifs(parser.pwm_path, parser.organism, group_path_list, n_insert, results)
+    prom_mut_preds, term_mut_preds = make_predictions(parser.organism, parser.modelname, mutated_prom, original_prom, mutated_term, original_term)
 
     df["prom_mut_preds"] = prom_mut_preds
     df["term_mut_preds"] = term_mut_preds
 
     df = add_original_preds(df, original_pred_path)
 
-    motif_type = pwm_path.split("/")[-1].replace(".pwm", "")
+    motif_type = parser.pwm_path.split("/")[-1].replace(".pwm", "")
     f_out = os.path.join(outdir, f"{motif_type}_{exp_group}_exp.tsv")
     df.to_csv(f_out, index=False, header=True, sep='\t')
+
+if __name__ == "__main__":
+    main()

@@ -91,7 +91,7 @@ do
   #$5
   GENOME_GFF=$DERIVED"/genes.filtered.gff"
   #$6
-  EXPRESSION=$DERIVED"/only_expressed_median.tsv"
+  EXPRESSION=$DERIVED"/only_expressed_quartiles.tsv"
   # space at the end is important
   bash setup_files.sh $GENOME_FASTA $MASKED_GENOME_FASTA $ONLY_CDS_GENOME_FASTA $GENOME_FAI $GENOME_GFF $EXPRESSION $DATADIR $CDS_FASTA
 done

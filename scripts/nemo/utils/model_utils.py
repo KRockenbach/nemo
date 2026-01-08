@@ -59,6 +59,8 @@ from tensorflow_addons.layers import GELU
 
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 
+num_out = 5
+
 ######################
 def to_bool(string):
     if isinstance(string, bool): # check if input is already boolean
@@ -143,7 +145,6 @@ def load_fold(datadir, fold, scaler, mapper=None):
     else:
         scaled_fold_table = fold_table
     # scale expression data (done separately to ensure consistency with inverse transform)
-    num_out = 1
     # unscaled expression data for current fold
     exp = scaled_fold_table.iloc[:,0:num_out]
     # scale expression data
@@ -189,7 +190,6 @@ def load_mapper(datadir, test_fold=0, valid_fold=1, verbose=False):
 def retreive_column(scaled_fold_table, retreive="promoter", outP=15000, inP=5000, outT=15000, inT=5000, verbose=False):
     # retreive a specific column from the dataset
     # selection of columns depends on config and task
-    num_out = 1
     if retreive == "promoter":
         full_len = scaled_fold_table.loc[:,'PROMOTER'].str.len().iloc[0]
         if verbose:
@@ -224,7 +224,7 @@ def retreive_column(scaled_fold_table, retreive="promoter", outP=15000, inP=5000
         halflifedata = scaled_fold_table.iloc[:,num_out:(num_out+8)].to_numpy(dtype=float)
         return halflifedata
     elif retreive == "expression":
-        expression = scaled_fold_table.iloc[:,0].to_numpy(dtype=float)
+        expression = scaled_fold_table.iloc[:,0:num_out].to_numpy(dtype=float)
         return expression
     elif retreive == "ID":
         geneName = pd.Series(scaled_fold_table.index).to_numpy(dtype=int)
@@ -604,7 +604,7 @@ def build_xpresso():
 
 
 
-def build_nemo():
+def build_nemo_encoder():
 
     ini = "glorot_normal"
     def get_stride(fraction, size):
@@ -683,10 +683,38 @@ def build_nemo():
     D = GELU(approximate=False)(D)
     D = Dropout(0.00124)(D)
 
-    D = Dense(1)(D) # output
+    #D = Dense(1)(D) # output
 
+    #return Model(inputs = [promoter, terminator], outputs = D)
+    return D
+
+def build_nemo():
+    promoter = Input(shape=(6200, 4), name="promoter")
+    terminator = Input(shape=(6200, 4), name="terminator")
+    encoder = build_nemo_encoder()
+    D = Dense(750, kernel_initializer=ini)(encoder)
+    D = BatchNormalization(momentum=0.81669)(D)
+    D = GELU(approximate=False)(D)
+
+    D = Dense(3, kernel_initializer=ini)(D)
+    D = BatchNormalization(momentum=0.81669)(D)
+    D = GELU(approximate=False)(D)
+    D = Dropout(0.00124)(D)
+    D = Dense(1)(D) # single-regression output
     return Model(inputs = [promoter, terminator], outputs = D)
 
 
+def build_nemo2():
+    promoter = Input(shape=(6200, 4), name="promoter")
+    terminator = Input(shape=(6200, 4), name="terminator")
+    encoder = build_nemo_encoder()
+    D = Dense(750, kernel_initializer=ini)(encoder)
+    D = BatchNormalization(momentum=0.81669)(D)
+    D = GELU(approximate=False)(D)
 
-
+    D = Dense(3, kernel_initializer=ini)(D)
+    D = BatchNormalization(momentum=0.81669)(D)
+    D = GELU(approximate=False)(D)
+    D = Dropout(0.00124)(D)
+    D = Dense(5)(D) # multi-regression output
+    return Model(inputs = [promoter, terminator], outputs = D)

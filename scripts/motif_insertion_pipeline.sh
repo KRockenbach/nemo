@@ -107,8 +107,8 @@ do
   do
     At_ID_PATH=$(ls ../data/Athaliana/parent_data/TF_ids/* | grep "${FAMILY}\.")
     Bn_ID_PATH=$(ls ../data/Bnapus/parent_data/TF_ids/* | grep "${FAMILY}\.")
-    CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences $PWM_PATH Athaliana $At_ID_PATH $FAMILY  & pid1=$!
-    CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences $PWM_PATH Bnapus $Bn_ID_PATH $FAMILY & pid2=$!
+    CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -p $PWM_PATH -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" & pid1=$!
+    CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -p $PWM_PATH -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" & pid2=$!
     wait $pid1 $pid2
   done
 done

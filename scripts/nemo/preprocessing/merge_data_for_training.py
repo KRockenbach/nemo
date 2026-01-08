@@ -33,8 +33,8 @@ title: merge_data.py
 description: merges all data needed for training into a single file, also sequences intervals that are not fully contained on chromosome are padded
 author: Agnieszka Golicz / Kevin Rockenbach
 email: agnieszka.golicz@agrar.uni-giessen.de / kevin.rockenbach@ag.uni-giessen.de
-date: 2025-08-28
-version: 1.0.0
+date: 2026-01-08
+version: 1.0.1
 usage:
       depending if merging is done for nemo or Xpresso model, either 5 or 9 positional inputs are needed
       python nemo/preprocessing/merge_data.py
@@ -63,8 +63,6 @@ import pandas as pd
 import numpy as np
 
 
-print(len(sys.argv))
-print(sys.argv)
 assert(((len(sys.argv) == 10) or (len(sys.argv) == 6)))
 
 datadir=sys.argv[1]
@@ -137,7 +135,7 @@ else:
             ID_col=l_arr[0]
 
 
-out_names = [ x.upper() for x in out_d[ID_col]]
+out_names = [x.upper() for x in out_d[ID_col]]
 h=["GENEID"]
 h.extend(out_names)
 if len(sys.argv) == 10:

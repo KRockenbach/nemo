@@ -65,9 +65,9 @@ echo "Preprocessing expression data..."
 echo "Calculating averages across replicates..."
 REP_AVRG=$DERIVED"/rep_avrg_matrix.tsv"
 Rscript nemo/preprocessing/get_rep_avrg.R $SAMPLE_INFO $EXPRESSION $REP_AVRG
-echo "Calculating medians expression across samples..."
-MEDIANS=$DERIVED"/median_expr.tsv"
-Rscript nemo/preprocessing/get_median.R $REP_AVRG $MEDIANS
+echo "Calculating expression quartiles across samples..."
+QUARTILES=$DERIVED"/quartile_expr.tsv"
+Rscript nemo/preprocessing/get_quartiles.R $REP_AVRG $QUARTILES
 rm $REP_AVRG
 
 echo "Excluding unplaced contigs from annotation..."
@@ -133,11 +133,11 @@ paste names seqs > $DERIVED"/CDS_seqs.tsv"
 rm names seqs
 # make dataframe with gene names, CDS sequences, classes and priorities --> outputs graphpart_df.tsv
 # classes defined based on expression data
-# secondary output is dataframe of median expression, containing only expressed genes (max TPM > 0)
-OE_MEDIANS=$DERIVED"/only_expressed_median.tsv"
+# secondary output is dataframe of expression quartiles, containing only expressed genes (max TPM > 0)
+OE_QUARTILES=$DERIVED"/only_expressed_quartiles.tsv"
 GP_DF_TSV=$DERIVED"/graphpart_df.tsv"
 CDS_SEQS=$DERIVED"/CDS_seqs.tsv"
-Rscript nemo/preprocessing/graphpart_prep_only_expressed.R $(echo $REP_AVRG | sed 's/.tsv/.clean.tsv/') $MEDIANS $CDS_SEQS $HIGH_ID $GP_DF_TSV $OE_MEDIANS "Bnapus"
+Rscript nemo/preprocessing/graphpart_prep_only_expressed.R $QUARTILES $CDS_SEQS $HIGH_ID $GP_DF_TSV $OE_QUARTILES "Bnapus"
 # substitute all whitespace with comma --> turn into csv
 GP_DF_CSV=$(echo $GP_DF_TSV | sed 's/.tsv/.csv/')
 cat $GP_DF_TSV | tr -s '[:blank:]' ',' > $GP_DF_CSV

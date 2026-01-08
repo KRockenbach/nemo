@@ -174,11 +174,11 @@ then
       TERM=$ONLY_CDS_TERM_FASTA
     fi
     echo -n "$DERIVED $FP_GC $TP_GC $CDS_GC $GENE_STATS $EXPRESSION $PROM $TERM $MASK_TYPE "
-  done | xargs -n 9 -P 3 python3 nemo/preprocessing/merge_data.py
+  done | xargs -n 9 -P 3 python3 nemo/preprocessing/merge_data_for_training.py
 else
   PROM=$MASKED_PROM_FASTA
   TERM=$MASKED_TERM_FASTA
-  python3 nemo/preprocessing/merge_data.py $DERIVED $EXPRESSION $PROM $TERM masked
+  python3 nemo/preprocessing/merge_data_for_training.py $DERIVED $EXPRESSION $PROM $TERM masked
 fi
 
 

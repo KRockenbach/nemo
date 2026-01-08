@@ -52,6 +52,8 @@ import random
 
 random.seed(1234)
 
+num_outputs = 5
+
 ##################################################
 # AUXILLARY FUNCTION DEFINITIONS
 ##################################################
@@ -66,18 +68,21 @@ def get_data(data_file):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++")
     table = pd.read_table(data_file, index_col=0) # read data, gene ID used as index.
     #index later used to select based on graphpart cluster
-
-    table = table.loc[:,["MEDIAN_EXPRESSION","PROMOTER","TERMINATOR"]]
-    table.iloc[:,0] = np.log10(table.iloc[:,0]+0.1)
+    if num_outputs == 1:
+        table = table.loc[:,["MEDIAN_EXPRESSION", "PROMOTER","TERMINATOR"]]
+    if num_outputs == 3:
+        table = table.loc[:,["MIN_EXPRESSION", "MEDIAN_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
+    else:
+        table = table.loc[:,["MIN_EXPRESSION", "Q1_EXPRESSION", "MEDIAN_EXPRESSION", "Q3_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
+    table.iloc[:,0:num_outputs] = np.log10(table.iloc[:,0:num_outputs]+0.1)
     assert (not table.isnull().any().any()) # assert that table is free of NaN values
     return table
 
 
 # get scaler and mapper for specific fold combination
 def get_scaler(train_table, out_dir):
-    num_out = 1
     # expression data for current fold
-    exp = train_table.iloc[:,0:num_out]
+    exp = train_table.iloc[:,0:num_outputs]
 
     # sclaer to be saved for later inverse_transformation of prediction results
     # rest of numeric data is sclaed separately using mapper

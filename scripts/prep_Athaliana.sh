@@ -70,14 +70,14 @@ tail -n+6 $EXPRESSION >> $FIXED_HEADER_EXPRESSION
 # remove samples with low average spearman correlation
 Rscript nemo/preprocessing/remove_low_corr_samples.R $FIXED_HEADER_EXPRESSION
 
-echo "Calculating medians expression across samples..."
-MEDIANS=$DERIVED"/median_expr.tsv"
-# CONDENSED_EXPRESSION is matrix which only contains numerical columns except for gene name column (created by get_median.R)
+echo "Calculating expression quartiles across samples..."
+QUARTILES=$DERIVED"/quartile_expr.tsv"
+# CONDENSED_EXPRESSION is matrix which only contains numerical columns except for gene name column (created by get_quartiles.R)
 CONDENSED_EXPRESSION=$(echo $FIXED_HEADER_EXPRESSION | sed 's/.tsv$/.clean.tsv/')
 
 USER=ubuntu
 sudo usermod -a -G staff $USER
-Rscript nemo/preprocessing/get_median.R $FIXED_HEADER_EXPRESSION $MEDIANS
+Rscript nemo/preprocessing/get_quartiles.R $FIXED_HEADER_EXPRESSION $QUARTILES
 
 
 echo "Excluding chloroplast and mitochondrial contigs and comments from GFF"
@@ -137,11 +137,11 @@ paste names seqs > $DERIVED"/CDS_seqs.tsv"
 rm names seqs
 # make dataframe with gene names, CDS sequences, classes and priorities --> outputs graphpart_df.tsv
 # classes defined based on expression data
-# secondary output is dataframe of median expression, containing only expressed genes (max TPM > 0)
-OE_MEDIANS=$DERIVED"/only_expressed_median.tsv"
+# secondary output is dataframe of expression quartiles, containing only expressed genes (max TPM > 0)
+OE_QUARTILES=$DERIVED"/only_expressed_quartiles.tsv"
 GP_DF_TSV=$DERIVED"/graphpart_df.tsv"
 CDS_SEQS=$DERIVED"/CDS_seqs.tsv"
-Rscript nemo/preprocessing/graphpart_prep_only_expressed.R $CONDENSED_EXPRESSION $MEDIANS $CDS_SEQS $GP_DF_TSV $OE_MEDIANS "Athaliana"
+Rscript nemo/preprocessing/graphpart_prep_only_expressed.R $QUARTILES $CDS_SEQS $GP_DF_TSV $OE_QUARTILES "Athaliana"
 # substitute all whitespace with comma --> turn into csv
 GP_DF_CSV=$(echo $GP_DF_TSV | sed 's/.tsv/.csv/')
 cat $GP_DF_TSV | tr -s '[:blank:]' ',' > $GP_DF_CSV

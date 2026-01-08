@@ -139,10 +139,8 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
         exec(f'{key} = test["{key}"]') # output and ID are defined here
 
 
-    if modelname == "xpresso":
-        model = build_xpresso()
-    else:
-        model = build_nemo()
+    model = None
+    exec(f"model = build_{modelname}()")
 
     model.load_weights(model_file)
 
@@ -184,7 +182,7 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
         rand_term_down_preds = model.predict(rand_term_down_inputs, batch_size=batch)
 
     # perform inverse transformation
-    n_outputs = 3
+    n_outputs = int(config["num_outputs"])
     x = scaler.inverse_transform(test["output"].reshape(-1,n_outputs))  #scaler expects 2D-array
     y = scaler.inverse_transform(preds.reshape(-1,n_outputs))
     if randomize:
@@ -196,7 +194,12 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
 
     gene_names = translate_IDs(test["ID"], datadir)
     mat = np.column_stack((gene_names, x))
-    colnames = ['Gene', 'Median_Expression']
+    if n_outputs == 1:
+        colnames = ['Gene', 'Median_Expression']
+    elif n_outputs == 3:
+        colnames = ['Gene', 'Min_Expression', 'Median_Expression', 'Max_Expression']
+    else:
+        colnames = ['Gene', 'Min_Expression', 'Q1_Expression', 'Median_Expression', 'Q3_Expression', 'Max_Expression']
     df = pd.DataFrame(mat, columns=colnames)
     f_out = os.path.join(outdir, f'actual.t_{test_fold}.txt')
     # actual expression only needs to be saved once per test fold
@@ -315,14 +318,19 @@ if partitioning == "graphpart" and masking == "masked" and modelname == "nemo":
 
     # perform inverse transformation
     print(test["output"].shape)
-    n_outputs = 3
+    n_outputs = int(config["num_outputs"])
     x = scaler.inverse_transform(test["output"].reshape(-1,n_outputs))  #scaler expects 2D-array
     y = scaler.inverse_transform(preds.reshape(-1,n_outputs))
 
 
     gene_names = translate_IDs(test["ID"], datadir)
     mat = np.column_stack((gene_names, x))
-    colnames = ['Gene', 'Median_Expression']
+    if n_outputs == 1:
+        colnames = ['Gene', 'Median_Expression']
+    elif n_outputs == 3:
+        colnames = ['Gene', 'Min_Expression', 'Median_Expression', 'Max_Expression']
+    else:
+        colnames = ['Gene', 'Min_Expression', 'Q1_Expression', 'Median_Expression', 'Q3_Expression', 'Max_Expression']
     df = pd.DataFrame(mat, columns=colnames)
     f_out = os.path.join(outdir, f'actual.full.txt')
     # actual expression only needs to be saved once per test fold

@@ -33,8 +33,8 @@ title: setup_folds.py
 description: sets up training folds in feather format, also fits and applies scalers and performs log transform
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2025-08-28
-version: 1.0.0
+date: 2026-01-08
+version: 2.0.1
 usage:
       python nemo/preprocessing/setup_folds.py <merged_data> <output_directory> <TSV with gene names and gene indices> <graphpart_output> <masking> <species>
 =========================================================================================================
@@ -56,6 +56,8 @@ random.seed(1234)
 # AUXILLARY FUNCTION DEFINITIONS
 ##################################################
 
+num_outputs = 5
+
 ##################################################
 # get entire log-transformed data table (so that it can remain in memory)
 def get_data(data_file):
@@ -68,11 +70,11 @@ def get_data(data_file):
     #index later used to select based on graphpart cluster
 
     table.dropna(axis=0, inplace=True) # remove any rows containing NaN values
-    # expression output (1) and lengths (+4) and exon density (+1)
-    if len(table.columns) == 11:
-        table.iloc[:,0:(1+5)] = np.log10(table.iloc[:,0:(1+5)]+0.1) # log_10 transformation
+    # expression output (num_outputs) and lengths (+4) and exon density (+1) 5UTR, 3UTR, CDS GC content (+3) promoter, terminator (+2)
+    if len(table.columns) == (num_outputs+8+2):
+        table.iloc[:,0:(num_outputs+5)] = np.log10(table.iloc[:,0:(num_outputs+5)]+0.1) # log_10 transformation
     else:
-        table.iloc[:,0] = np.log10(table.iloc[:,0]+0.1) # log_10 transformation
+        table.iloc[:,0:num_outputs] = np.log10(table.iloc[:,0:num_outputs]+0.1) # log_10 transformation
     assert (not table.isnull().any().any())
     return table
 
@@ -101,27 +103,31 @@ def get_fold_data(table, id_key, graphpart, fold, halflife_data=False):
     assert fold_table.index.to_list() == gp_fold_idx
     # print number of rows for verification
     if not halflife_data:
-        fold_table = fold_table.loc[:,["MEDIAN_EXPRESSION","PROMOTER","TERMINATOR"]]
+        if num_outputs == 1:
+            fold_table = fold_table.loc[:,["MEDIAN_EXPRESSION", "PROMOTER","TERMINATOR"]]
+        if num_outputs == 3:
+            fold_table = fold_table.loc[:,["MIN_EXPRESSION", "MEDIAN_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
+        else:
+            fold_table = fold_table.loc[:,["MIN_EXPRESSION", "Q1_EXPRESSION", "MEDIAN_EXPRESSION", "Q3_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
     return fold_table
 
 
 # get scaler and mapper for specific fold combination
 def get_scaler(train_table, out_dir, test_fold, valid_fold):
 
-    num_out=1
     # expression data for current fold
-    exp = train_table.iloc[:,0:num_out]
+    exp = train_table.iloc[:,0:num_outputs]
 
     # sclaer to be saved for later inverse_transformation of prediction results
     # rest of numeric data is sclaed separately using mapper
 
     scaler = preprocessing.StandardScaler()
-    if len(train_table.columns) == 11:
-        mapper = DataFrameMapper([(train_table.columns[0],
+    if len(train_table.columns) == (num_outputs+8+2):
+        mapper = DataFrameMapper([(train_table.columns[0:num_outputs],
                                    None), # expression, scaled separately
-                                  (train_table.columns[1:(1+8)], # 8 halflife features
+                                  (train_table.columns[num_outputs:(num_outputs+8)], # 8 halflife features
                                    preprocessing.StandardScaler()), # scaled by mapper
-                                  (train_table.columns[(1+8):],
+                                  (train_table.columns[(num_outputs+8):],
                                    None)]) # promoter & terminator
 
     # only train data is used to fit expression scaler

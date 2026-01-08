@@ -29,48 +29,43 @@
 
 #=========================================================================================================
 #title: graphpart_prep_only_expressed.R
-#description: Prepares data frame to be converted into graphpart input fasta file. Also outputs data frame of median expression for all expressed genes
+#description: Prepares data frame to be converted into graphpart input fasta file. Also outputs data frame of expression quartiles for all expressed genes
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
-#usage: Rscript graphpart_prep_only_expressed.R <expression matrix> <TSV of names and median expression> <TSV of names and CDS sequence> <TSV of homoeolog pairs (optional)> <graphpart DF output> <median expression output> <species>
+#date: 2026-01-08
+#version: 2.0.0
+#usage: Rscript graphpart_prep_only_expressed.R <TSV of names and expression quartiles> <TSV of names and CDS sequence> <TSV of homoeolog pairs (optional)> <graphpart DF output> <expression quartile output> <species>
 #=========================================================================================================
 
 
 args = commandArgs(trailingOnly=TRUE)
-#1 rep-avrg
-#2 median
-#3 input "data/CDS_seqs.tsv"
-#4 input "data/high_id_homoeolog_pairs.tsv" (optional)
-#5 output "data/graphpart_df.tsv"
-#6 output "data/only_expressed_median_TPM.tsv"
-#7 input organism
+#1 expression quartiles (.tsv)
+#2 input "data/CDS_seqs.tsv"
+#3 input "data/high_id_homoeolog_pairs.tsv" (optional)
+#4 output "data/graphpart_df.tsv"
+#5 output "data/only_expressed_quartiles_TPM.tsv"
+#6 input organism
 
-ALL_TPM <- read.table(args[1], sep="\t", header=T, row.names=1)
-MEDIAN_TPM <- read.table(args[2], sep="\t", header=T)
-get_max <- function(x){
-    return(max(x, na.rm=T))
-}
-MAX_TPM <- apply(ALL_TPM, MARGIN = 1, FUN=get_max)
+QUARTILE_TPM <- read.table(args[1], sep="\t", header=T)
+MAX_TPM <- QUARTILE_TPM$max_expression
 # exclude non-expressed genes (likely pseudogenes)
 # they will not be used for model training and evaluation
 
-only_expressed <- MEDIAN_TPM[MAX_TPM > 0,]
-if (length(args)==7){
+only_expressed <- QUARTILE_TPM[MAX_TPM > 0,]
+if (length(args)==6){
     # exclude high-ID homoeologs
-    high_ID <- read.table(args[4], sep="\t", header=F)
+    high_ID <- read.table(args[3], sep="\t", header=F)
     # concat together homoeologs from A and C subgenomes
     high_ID <- c(as.character(high_ID[,1]), as.character(high_ID[,2]))
     # exclude high ID homoeologs
     only_expressed <- only_expressed[!(only_expressed[,1] %in% high_ID),]
-    gp_df_out <- args[5]
-    tpm_out <- args[6]
-    organism <- args[7] 
-} else {
-    gp_df_out <- args[4] 
+    gp_df_out <- args[4]
     tpm_out <- args[5]
-    organism <- args[6]
+    organism <- args[6] 
+} else {
+    gp_df_out <- args[3] 
+    tpm_out <- args[4]
+    organism <- args[5]
 }
 
 # 25% and 75% quantiles of expressed genes are boundaries for low, mid high expression classes
@@ -84,7 +79,7 @@ class[class_low] <- paste(organism, "Low", sep="")
 class[class_high] <- paste(organism, "High", sep="")
 names(class) <- only_expressed$transcript
 
-cds_seqs <- read.table(args[3], sep="\t", header=F)
+cds_seqs <- read.table(args[2], sep="\t", header=F)
 colnames(cds_seqs) <- c('names', 'seqs')
 names <- names(class)
 class_df <- data.frame("names"=names, "class"=class)

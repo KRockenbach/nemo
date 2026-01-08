@@ -28,12 +28,12 @@
 
 
 #=========================================================================================================
-#title: get_median.R
+#title: get_quartiles.R
 #description: calculated median expression across samples
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-01-08
+#version: 2.0.0
 #usage: Rscript get_median.R <expression_matrix> <output>
 #=========================================================================================================
 
@@ -56,12 +56,17 @@ for (c in 1:ncol(TPM_df)){
 
 
 transcript <- rownames(TPM_df)
-get_median <- function(x){
-    return(median(x, na.rm=T))
-}
-median_expression <- apply(TPM_df, MARGIN=1, FUN=get_median)
 
-OUT_df <- data.frame(transcript, median_expression)
+#get_median <- function(x){
+#    return(median(x, na.rm=T))
+#}
+min_expression <- apply(TPM_df, 1, min, na.rm=T)
+q1_expression <- apply(TPM_df, 1, quantile, probs=0.25, na.rm=T)
+median_expression <- apply(TPM_df, 1, median, na.rm=T)
+q3_expression <- apply(TPM_df, 1, quantile, probs=0.75, na.rm=T)
+max_expression <- apply(TPM_df, 1, max, na.rm=T)
+
+OUT_df <- data.frame(transcript, min_expression, q1_expression, median_expression, q3_expression, max_expression)
 write.table(OUT_df, file=args[2], 
             sep="\t", row.names=F, col.names=T, quote=F)
 

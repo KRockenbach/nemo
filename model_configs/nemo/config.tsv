@@ -3,3 +3,4 @@ use_terminator	True
 use_halflife	False
 use_xpresso_optimization	False
 use_one_cycle_optimization	True
+num_outputs	1
