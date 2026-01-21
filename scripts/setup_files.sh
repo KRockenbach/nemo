@@ -216,6 +216,10 @@ else
   GP_CSV=$DERIVED"/graphpart_result.csv"
   python3 nemo/preprocessing/setup_folds.py $FILE $OUTDIR ${DERIVED}/gene.id.key $GP_CSV masked $ORGANISM
   python3 nemo/preprocessing/setup_full.py ${DERIVED}/merged.data.masked.gz ${DATADIR}/masked_graphpart_fold_data/
+  #if [[ "$ORGANISM" == "Bnapus" ]]; then
+  #  GP_CSV=${DERIVED}"/../parent_data/graphpart_result.Bn.csv"
+  #  python3 nemo/preprocessing/setup_folds.py $FILE $OUTDIR ${DERIVED}/gene.id.key $GP_CSV masked $ORGANISM
+  #fi
 fi
 
 

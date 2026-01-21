@@ -33,8 +33,8 @@ title: model_utils.py
 description: helper functions for data loading and model building
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2025-08-28
-version: 1.0.0
+date: 2026-01-20
+version: 1.0.1
 usage:
       (1) run a given script (e.g. script.py) as: python -m script
       (2) within script, import functions using: from ..utils.model_utils import *
@@ -148,7 +148,7 @@ def load_fold(datadir, fold, scaler, mapper=None):
     # unscaled expression data for current fold
     exp = scaled_fold_table.iloc[:,0:num_out]
     # scale expression data
-    scaled_fold_table.iloc[:,0] = scaler.transform(exp.values)
+    scaled_fold_table.iloc[:,0:num_out] = scaler.transform(exp.values)
 
     return scaled_fold_table
 
@@ -570,129 +570,110 @@ def build_model(params, train, input_names=["promoter", "terminator"]):
     return model
 
 
-#######################################
-
-def build_xpresso():
-
-    ini = "glorot_normal"
-
-    promoter = Input(shape=(10500, 4), name='promoter')
-
-    P = Conv1D(128, 6, padding="same", kernel_initializer=ini)(promoter)
-    P = LeakyReLU(alpha=0.1)(P)
-    P = MaxPooling1D(30, padding="same")(P)
-
-    P = Conv1D(32, 9, padding="same", kernel_initializer=ini)(P)
-    P = LeakyReLU(alpha=0.1)(P)
-    P = MaxPooling1D(10, padding="same")(P)
-
-    P = Flatten()(P)
-    halflife = Input(shape=(8), name='halflife')
-    D = Concatenate()([P, halflife])
-
-    D = Dense(64, kernel_initializer=ini)(D)
-    D = LeakyReLU(alpha=0.1)(D)
-    D = Dropout(0.00099)(D)
-
-    D = Dense(2, kernel_initializer=ini)(D)
-    D = LeakyReLU(alpha=0.1)(D)
-    D = Dropout(0.01546)(D)
-
-    D = Dense(1)(D) # output
-
-    return Model(inputs = [promoter, halflife], outputs = D)
+######################################
 
 
 
-def build_nemo_encoder():
+def build_nemo_promoter(promoter, momentum=0.81669, pooling_fixed=False):
 
     ini = "glorot_normal"
     def get_stride(fraction, size):
         return max([1, ceil(fraction*size)])
-
-    promoter = Input(shape=(6200, 4), name="promoter")
+    m = momentum
 
     P = Conv1D(288, 5, padding = 'same', kernel_initializer = ini)(promoter)
-    P = BatchNormalization(momentum=0.81669)(P)
+    P = BatchNormalization(momentum=m)(P)
     P = GELU(approximate=False)(P)
 
     P = Conv1D(106, 8, padding = 'same', kernel_initializer = ini)(P)
-    P = BatchNormalization(momentum=0.81669)(P)
+    P = BatchNormalization(momentum=m)(P)
     P = GELU(approximate=False)(P)
-    P = AveragePooling1D(21, strides = get_stride(0.7, 21), padding="same")(P)
+    if pooling_fixed:
+        P = AveragePooling1D(2*get_stride(0.7, 21), strides = get_stride(0.7, 21), padding="same")(P)
+    else:
+        P = AveragePooling1D(21, strides = get_stride(0.7, 21), padding="same")(P)
 
     P = Conv1D(227, 9, padding = 'same', kernel_initializer = ini)(P)
-    P = BatchNormalization(momentum=0.81669)(P)
+    P = BatchNormalization(momentum=m)(P)
     P = GELU(approximate=False)(P)
 
     P = Conv1D(187, 10, padding = 'same', kernel_initializer = ini)(P)
-    P = BatchNormalization(momentum=0.81669)(P)
+    P = BatchNormalization(momentum=m)(P)
     P = GELU(approximate=False)(P)
 
     P = Conv1D(64, 46, padding = 'same', kernel_initializer = ini)(P)
-    P = BatchNormalization(momentum=0.81669)(P)
+    P = BatchNormalization(momentum=m)(P)
     P = GELU(approximate=False)(P)
-    P = AveragePooling1D(18, strides = get_stride(0.7, 18), padding="same")(P)
+    if pooling_fixed:
+        P = AveragePooling1D(2*get_stride(0.7, 18), strides = get_stride(0.7, 18), padding="same")(P)
+    else:
+        P = AveragePooling1D(18, strides = get_stride(0.7, 18), padding="same")(P)
 
     P = Conv1D(152, 62, padding = 'same', kernel_initializer = ini)(P)
-    P = BatchNormalization(momentum=0.81669)(P)
+    P = BatchNormalization(momentum=m)(P)
     P = GELU(approximate=False)(P)
-    P = AveragePooling1D(8, strides = get_stride(0.7, 8), padding="same")(P)
+    if pooling_fixed:
+        P = AveragePooling1D(2*get_stride(0.7, 8), strides = get_stride(0.7, 8), padding="same")(P)
+    else:
+        P = AveragePooling1D(8, strides = get_stride(0.7, 8), padding="same")(P)
 
     P = Flatten()(P)
+    return P
 
-    terminator = Input(shape=(6200, 4), name="terminator")
+def build_nemo_terminator(terminator, momentum=0.81669, pooling_fixed=False):
+
+    ini = "glorot_normal"
+    def get_stride(fraction, size):
+        return max([1, ceil(fraction*size)])
+    m = momentum
 
     T = Conv1D(219, 4, padding = 'same', kernel_initializer = ini)(terminator)
-    T = BatchNormalization(momentum=0.81669)(T)
+    T = BatchNormalization(momentum=m)(T)
     T = GELU(approximate=False)(T)
 
     T = Conv1D(449, 4, padding = 'same', kernel_initializer = ini)(T)
-    T = BatchNormalization(momentum=0.81669)(T)
+    T = BatchNormalization(momentum=m)(T)
     T = GELU(approximate=False)(T)
-    T = AveragePooling1D(21, strides = get_stride(0.7, 21), padding="same")(T)
+    if pooling_fixed:
+        T = AveragePooling1D(2*get_stride(0.7, 21), strides = get_stride(0.7, 21), padding="same")(T)
+    else:
+        T = AveragePooling1D(21, strides = get_stride(0.7, 21), padding="same")(T)
 
     T = Conv1D(259, 16, padding = 'same', kernel_initializer = ini)(T)
-    T = BatchNormalization(momentum=0.81669)(T)
+    T = BatchNormalization(momentum=m)(T)
     T = GELU(approximate=False)(T)
 
     T = Conv1D(154, 15, padding = 'same', kernel_initializer = ini)(T)
-    T = BatchNormalization(momentum=0.81669)(T)
+    T = BatchNormalization(momentum=m)(T)
     T = GELU(approximate=False)(T)
 
     T = Conv1D(105, 20, padding = 'same', kernel_initializer = ini)(T)
-    T = BatchNormalization(momentum=0.81669)(T)
+    T = BatchNormalization(momentum=m)(T)
     T = GELU(approximate=False)(T)
-    T = AveragePooling1D(18, strides = get_stride(0.7, 18), padding="same")(T)
+    if pooling_fixed:
+        T = AveragePooling1D(2*get_stride(0.7, 18), strides = get_stride(0.7, 18), padding="same")(T)
+    else:
+        T = AveragePooling1D(18, strides = get_stride(0.7, 18), padding="same")(T)
 
     T = Conv1D(152, 22, padding = 'same', kernel_initializer = ini)(T)
-    T = BatchNormalization(momentum=0.81669)(T)
+    T = BatchNormalization(momentum=m)(T)
     T = GELU(approximate=False)(T)
-    T = AveragePooling1D(8, strides = get_stride(0.7, 8), padding="same")(T)
+    if pooling_fixed:
+        T = AveragePooling1D(2*get_stride(0.7, 8), strides = get_stride(0.7, 8), padding="same")(T)
+    else:
+        T = AveragePooling1D(8, strides = get_stride(0.7, 8), padding="same")(T)
 
     T = Flatten()(T)
+    return T
 
-    D = Concatenate(axis=1)([P, T])
-
-    D = Dense(750, kernel_initializer=ini)(D)
-    D = BatchNormalization(momentum=0.81669)(D)
-    D = GELU(approximate=False)(D)
-
-    D = Dense(3, kernel_initializer=ini)(D)
-    D = BatchNormalization(momentum=0.81669)(D)
-    D = GELU(approximate=False)(D)
-    D = Dropout(0.00124)(D)
-
-    #D = Dense(1)(D) # output
-
-    #return Model(inputs = [promoter, terminator], outputs = D)
-    return D
 
 def build_nemo():
     promoter = Input(shape=(6200, 4), name="promoter")
     terminator = Input(shape=(6200, 4), name="terminator")
-    encoder = build_nemo_encoder()
-    D = Dense(750, kernel_initializer=ini)(encoder)
+    P = build_nemo_promoter(promoter)
+    T = build_nemo_temrinator(terminator)
+    D = Concatenante(axis=1)([P,T])
+    D = Dense(750, kernel_initializer=ini)(D)
     D = BatchNormalization(momentum=0.81669)(D)
     D = GELU(approximate=False)(D)
 
@@ -704,10 +685,63 @@ def build_nemo():
     return Model(inputs = [promoter, terminator], outputs = D)
 
 
+
+def build_simple_encoder(input, momentum=0.81669):
+    # pooling windows are fixed to double the stride
+    # for "same" padding output size of pooling layer only depends on stride
+    ini = "glorot_normal"
+    pl_stride = 10
+
+    m = momentum
+    def conv_block(x, filter, kernel):
+        x = Conv1D(filter, kernel, padding = 'same', kernel_initializer = ini)(x)
+        x = BatchNormalization(momentum=m)(x)
+        x = GELU(approximate=False)(x)
+
+        # double the filters and double the kernel size
+        x = Conv1D(2*filter, 2*kernel, padding = 'same', kernel_initializer = ini)(x)
+        x = BatchNormalization(momentum=m)(x)
+        x = GELU(approximate=False)(x)
+        x = AveragePooling1D(2*pl_stride, strides = pl_stride, padding='same')(x)
+        return x
+
+    X = conv_block(input, 50, 5)
+    X = conv_block(X, 100, 10)
+    X = conv_block(X, 200, 31) # last conv kernels cover entire input
+
+
+    X = Flatten()(X)
+    return X
+
+def build_nemo2_dense(P, T, dim_0, dim_1, dropout, momentum=0.81669):
+    m = momentum
+    ini = "glorot_normal"
+    x = Concatenate(axis=1)([P, T])
+
+    x = Dense(dim_0, kernel_initializer=ini)(x)
+    x = BatchNormalization(momentum=m)(x)
+    x = GELU(approximate=False)(x)
+
+    x = Dense(dim_1, kernel_initializer=ini)(x)
+    x = BatchNormalization(momentum=m)(x)
+    x = GELU(approximate=False)(x)
+
+    x = Dropout(dropout)(x)
+
+    min_out = Dense(1, name="min_out")(x)
+    Q1_out = Dense(1, name="Q1_out")(x)
+    Q2_out = Dense(1, name="Q2_out")(x)
+    Q3_out = Dense(1, name="Q3_out")(x)
+    max_out = Dense(1, name="max_out")(x)
+    outputs = [min_out, Q1_out, Q2_out, Q3_out, max_out]
+    return outputs
+
 def build_nemo2():
     promoter = Input(shape=(6200, 4), name="promoter")
     terminator = Input(shape=(6200, 4), name="terminator")
-    encoder = build_nemo_encoder()
+    P = build_nemo2_promoter_branch(...)
+    T= build_nemo2_terminator_branch(...)
+    D = Concatenate(axis=1)([P, T])
     D = Dense(750, kernel_initializer=ini)(encoder)
     D = BatchNormalization(momentum=0.81669)(D)
     D = GELU(approximate=False)(D)

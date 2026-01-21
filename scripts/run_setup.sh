@@ -52,20 +52,22 @@ bash prep_Bnapus.sh & pid2=$!
 wait $pid1 $pid2
 
 
-# run graphpart for 10 partitions with threshold 0.3, recompute threshold 0.2, on 27 threads with triangular distance matrix for nucleotides
-echo "Grouping data into 10 evolutionarily independent partitions based on CDS similarity"
-cat ../data/Bnapus/derived_data/graphpart_df.fasta ../data/Athaliana/derived_data/graphpart_df.fasta > tmp.fasta
-graphpart mmseqs2needle -ff tmp.fasta -th 0.3 -re 0.2 -pn priority -pa 10 -nt $(nproc) -nu -tr
+### run graphpart for 10 partitions with threshold 0.3, recompute threshold 0.2, on 27 threads with triangular distance matrix for nucleotides
+##echo "Grouping data into 10 evolutionarily independent partitions based on CDS similarity"
+##cat ../data/Bnapus/derived_data/graphpart_df.fasta ../data/Athaliana/derived_data/graphpart_df.fasta > tmp.fasta
+##graphpart mmseqs2needle -ff tmp.fasta -th 0.3 -re 0.2 -pn priority -pa 10 -nt $(nproc) -nu -tr
 
 At_GP_RESULT="${ROOT}/data/Athaliana/derived_data/graphpart_result.csv"
 Bn_GP_RESULT="${ROOT}/data/Bnapus/derived_data/graphpart_result.csv"
-head -n 1 graphpart_result.csv > $At_GP_RESULT
-head -n 1 graphpart_result.csv > $Bn_GP_RESULT
-tail -n +2 graphpart_result.csv | grep -v "Bnapus" >> $At_GP_RESULT
-tail -n +2 graphpart_result.csv | grep "Bnapus" >> $Bn_GP_RESULT
-mv graphpart_result* needleall.error $ROOT"/data/"
-rm tmp.fasta
-
+##head -n 1 graphpart_result.csv > $At_GP_RESULT
+##head -n 1 graphpart_result.csv > $Bn_GP_RESULT
+##tail -n +2 graphpart_result.csv | grep -v "Bnapus" >> $At_GP_RESULT
+##tail -n +2 graphpart_result.csv | grep "Bnapus" >> $Bn_GP_RESULT
+##mv graphpart_result* needleall.error $ROOT"/data/"
+##rm tmp.fasta
+cp "${ROOT}/data/Athaliana/parent_data/graphpart_result.joint.csv" $At_GP_RESULT
+cp "${ROOT}/data/Bnapus/parent_data/graphpart_result.joint.csv" $Bn_GP_RESULT
+cp "${ROOT}/data/Bnapus/parent_data/graphpart_result.Bn.csv" "${ROOT}/data/Bnapus/derived/"
 
 for ORGANISM in "Bnapus" "Athaliana"
 do

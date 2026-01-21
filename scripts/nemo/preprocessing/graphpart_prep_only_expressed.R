@@ -33,7 +33,7 @@
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
 #date: 2026-01-08
-#version: 2.0.0
+#version: 1.0.1
 #usage: Rscript graphpart_prep_only_expressed.R <TSV of names and expression quartiles> <TSV of names and CDS sequence> <TSV of homoeolog pairs (optional)> <graphpart DF output> <expression quartile output> <species>
 #=========================================================================================================
 

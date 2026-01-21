@@ -1,3 +1,5 @@
+scripts/nemo/hyperparam_tuning/expression_dynamics*
+model_configs/nemo2*
 model_configs/LR_range_test
 model_weights/
 data/

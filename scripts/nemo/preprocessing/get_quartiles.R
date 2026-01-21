@@ -33,7 +33,7 @@
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
 #date: 2026-01-08
-#version: 2.0.0
+#version: 1.0.1
 #usage: Rscript get_median.R <expression_matrix> <output>
 #=========================================================================================================
 

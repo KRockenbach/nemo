@@ -32,25 +32,33 @@
 #description: runs required training for A. thaliana
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-01-21
+#version: 1.0.1
 #usage: bash train_Athaliana.sh
 #notes: To train in parallel device 1 is used for A. thaliana, device 0 used for B. napus
 #=========================================================================================================
 
 DEVICE=1
 
+source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
+source ${CONDA_PREFIX}/etc/profile.d/conda.sh
+
+mamba activate nemo
+
 MASK="masked"
 PARTITION="graphpart"
 ORGANISM="Athaliana"
-MODEL="nemo"
+TPM_TYPE="median"
 N="None"
 for TEST in {0..9}
 do
   VALID="None"
-  bash train.sh $DEVICE $ORGANISM $MODEL $MASK $PARTITION $TEST $VALID $N
+  CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
 done
 # train on full set
 VALID="None"
 TEST="None"
-bash train.sh $DEVICE $ORGANISM $MODEL $MASK $PARTITION $TEST $VALID $N
+CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
+
+
+mamba deactivate

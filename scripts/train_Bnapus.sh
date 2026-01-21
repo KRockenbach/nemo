@@ -32,49 +32,57 @@
 #description: runs required training for B. napus
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-01-21
+#version: 1.0.1
 #usage: bash train_Bnapus.sh
 #notes: To train in parallel device 1 is used for A. thaliana, device 0 used for B. napus
 #=========================================================================================================
 
 DEVICE=0
 
+source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
+source ${CONDA_PREFIX}/etc/profile.d/conda.sh
+
+mamba activate nemo
+
 for MASK in "masked" "clear" "only_cds"
 do
   for PARTITION in "graphpart" "random"
   do
     ORGANISM="Bnapus"
-    MODEL="nemo"
+    TPM_TYPE="median"
     for TEST in {0..9}
     do
       VALID="None"
       N="None"
-      bash train.sh $DEVICE $ORGANISM $MODEL $MASK $PARTITION $TEST $VALID $N
+      CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
     done
     if [[ $MASK == "masked" && $PARTITION == "graphpart" ]]; then
-      MODEL="xpresso"
       for N in {0..9}
       do
-        TEST=0
-        VALID=1
-        bash train.sh $DEVICE $ORGANISM $MODEL $MASK "graphpart_Bn" $TEST $VALID $N
-      done
-      MODEL="nemo"
-      for N in {0..9}
-      do
-        TEST=0
-        VALID=1
-        bash train.sh $DEVICE $ORGANISM $MODEL $MASK "graphpart_Bn" $TEST $VALID $N
-        TEST=0
-        VALID="None"
-        bash train.sh $DEVICE $ORGANISM $MODEL $MASK "graphpart_Bn" $TEST $VALID $N
+        for TPM_TYPE in "max" "median"
+        do
+          CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Xpresso $N $TPM_TYPE
+          CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Basenji-5K $N $TPM_TYPE
+          CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_CNN $N $TPM_TYPE
+          CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_transformer $N $TPM_TYPE
+          TEST=0
+          VALID=1
+          PARTITION="graphpart_Bn"
+          CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
+          VALID="None"
+          CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
+        done
       done
       # train on full set
       VALID="None"
       TEST="None"
       N="None"
-      bash train.sh $DEVICE $ORGANISM "nemo" "masked" "graphpart" $TEST $VALID $N
+      PARTITION="graphpart"
+      TPM_TYPE="median"
+      CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
     fi
   done
 done
+
+mamba deactivate

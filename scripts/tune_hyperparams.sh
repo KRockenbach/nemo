@@ -41,6 +41,7 @@
 #      bash tune_hyperparams.sh 0 optimize_learning.py learning_optimized 510 300 True
 #      bash tune_hyperparams.sh 0 finetune_architecture.py learning_finetuned 510 300 True
 #      bash tune_hyperparams.sh 0 final_touches.py nemo 310 310 True
+#      bash tune_hyperparams.sh 0 expression_dynamics.py nemo2 310 310 True
 #notes:
 #      Script can be executed multiple times in parallel, if multiple GPUs are available. The first argument should be changed accordingly
 #      Parallel optimization will be performed using a common database
@@ -87,7 +88,7 @@ fi
 
 while [ $N_TRIALS_COMPLETE -lt $TRIALS_TO_COMPLETE ]
 do
-  python3 -m nemo.hyperparam_tuning.$SCRIPTNAME $STUDY_NAME $N_TRIALS_PER_RUN $TRIALS_TO_COMPLETE
+  python3 -m nemo.hyperparam_tuning.$TRUNCATED_SCRIPTNAME $STUDY_NAME $N_TRIALS_PER_RUN $TRIALS_TO_COMPLETE
   N_TRIALS_COMPLETE=$(python nemo/hyperparam_tuning/get_completed_trials.py $STUDY_NAME)
   echo $N_TRIALS_COMPLETE" trials completed or pruned"
   sleep 5

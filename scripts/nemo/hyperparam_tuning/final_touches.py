@@ -55,7 +55,7 @@ import optuna
 from optuna.integration import TFKerasPruningCallback
 from optuna.samplers import TPESampler
 from optuna.trial import TrialState
-from ..utils.ModelTools import *
+from ..utils.model_utils import *
 from ..utils.one_cycle_scheduler_tf.one_cycle_tf.one_cycle_scheduler import OneCycle
 from tensorflow_addons.optimizers.weight_decay_optimizers import *
 

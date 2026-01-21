@@ -34,7 +34,7 @@ description: sets up training folds in feather format, also fits and applies sca
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
 date: 2026-01-08
-version: 2.0.0
+version: 1.0.1
 usage:
       python nemo/preprocessing/setup_folds.py <merged_data> <output_directory> <TSV with gene names and gene indices> <graphpart_output> <masking> <species>
 =========================================================================================================
@@ -181,7 +181,9 @@ if not os.path.exists(out_dir):
 # so it doesn't have to be loaded 90 times
 table = get_data(data_file)
 
+print(gp.split("/")[-1])
 if masking == "masked" and organism == "Bnapus" and gp.split("/")[-1] == "graphpart_result.csv":
+    print("hola?")
     Bn_gp = gp.replace(".csv", ".Bn.csv")
     Bn_graphpart = pd.read_table(Bn_gp, index_col=False, header=0, sep=',')
     Bn_out_dir=out_dir.replace("graphpart", "graphpart_Bn")

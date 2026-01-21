@@ -32,19 +32,19 @@
 #description: Creates downsampled versions of the B. napus data folds to match the size of A. thaliana folds for cross-species comparison
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-01-08
+#version: 1.0.1
 #usage: bash downsample_data.sh
 #=========================================================================================================
 
-source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
-source ${CONDA_PREFIX}/etc/profile.d/conda.sh
+#source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
+#source ${CONDA_PREFIX}/etc/profile.d/conda.sh
 
-mamba activate prep
+#mamba activate prep
 MASKING="masked"
 DATADIR="../data/Bnapus/${MASKING}_graphpart_fold_data"
 OUTDIR="../data/Bnapus/${MASKING}_graphpartDS_fold_data"
 mkdir -p $OUTDIR
 cp -r $DATADIR"/scalers/" $OUTDIR"/"
 python nemo/preprocessing/downsample_data.py $DATADIR $OUTDIR
-mamba deactivate
+#mamba deactivate

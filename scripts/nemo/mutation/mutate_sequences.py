@@ -34,7 +34,7 @@ description: creates pwm from pfm and motifs from pwm, inserts motif into sequen
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
 date: 2026-01-07
-version: 2.0.0
+version: 1.0.1
 usage: python -m nemo.mutation.mutate_sequences [-p|--pwm_path <path to pwm of TF>] [-o|--organism <species>] [-a|--associated_IDs <path to file containing gene IDs associated with TF family>] [-f|TF_family <TF family name>] [-m|--modelname <name of model>]
 notes: run within nemo environment
 =========================================================================================================

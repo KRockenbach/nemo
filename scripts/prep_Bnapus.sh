@@ -148,9 +148,9 @@ python nemo/preprocessing/csv_to_fasta.py --file $GP_DF_CSV --identifier_col 0 -
 # 28 threads are available in total
 echo "Grouping data into 10 evolutionarily independent partitions based on CDS similarity"
 GP_FASTA=$(echo $GP_DF_CSV | sed 's/.csv/.fasta/')
-graphpart mmseqs2needle -ff $GP_FASTA -th 0.3 -re 0.2 -pn priority -pa 10 -nt 27 -nu -tr
-mv graphpart_result.csv graphpart_result_report.json $DERIVED"/graphpart_result.Bn.csv"
-mv needleall.error $LOGS"/"
+###graphpart mmseqs2needle -ff $GP_FASTA -th 0.3 -re 0.2 -pn priority -pa 10 -nt 27 -nu -tr
+###mv graphpart_result.csv graphpart_result_report.json $DERIVED"/graphpart_result.Bn.csv"
+###mv needleall.error $LOGS"/"
 
 CDS_GFF=$DERIVED"/genes.filtered.CDS.gff"
 grep -P "\tCDS\t" $NOSCAF_GFF > $CDS_GFF
