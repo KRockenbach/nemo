@@ -3,7 +3,7 @@ model_configs/nemo2*
 model_configs/LR_range_test
 model_weights/
 data/
-scripts/nemo/utils/one_cycle_scheduler_tf/
+#scripts/nemo/utils/one_cycle_scheduler_tf/
 results/
 unpack.sh
 validation/

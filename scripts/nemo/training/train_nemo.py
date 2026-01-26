@@ -61,7 +61,7 @@ import tensorflow.keras.backend as K
 
 # important to use legacy version of Nadam for OneCycle callback to work
 from tensorflow.keras.optimizers.legacy import Nadam
-from utils.one_cycle_scheduler_tf.one_cycle_tf.one_cycle_scheduler import OneCycle
+from ..utils.one_cycle_scheduler_tf.one_cycle_tf.one_cycle_scheduler import OneCycle
 from tensorflow_addons.optimizers.weight_decay_optimizers import *
 from yaml import dump
 from ..models.nemo import build_nemo
@@ -93,8 +93,6 @@ if sys.argv[4] != "None":
         valid_fold = int(sys.argv[5])
     else:
         valid_fold = None
-    if (test_fold == valid_fold) or (test_fold not in list(range(10))) or (valid_fold not in list(range(10))): # invalid combination
-        raise Exception("invalid fold configuration")
 
 else:
     full = True
@@ -106,7 +104,7 @@ else:
     N = int(sys.argv[6])
 
 tpm_type = sys.argv[7]
-if tmp_type == "max" or tpm_type == "maximum":
+if tpm_type == "max" or tpm_type == "maximum":
     out_idx = 4
 else:
     out_idx = 2
@@ -139,7 +137,7 @@ if full:
     # get data for the training and validation set depending on config
     #########################
     train = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="full", test_fold=test_fold, valid_fold=valid_fold)
-    train["output"] = train["output"][,out_idx]
+    train["output"] = train["output"][:,out_idx]
     n_training = train[input_names[0]].shape[0]
     print(f"{n_training} training examples")
     print("\n\n")
@@ -148,9 +146,10 @@ else:
     # get data for the training and validation set depending on config
     #########################
     train = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="training", test_fold=test_fold, valid_fold=valid_fold)
-    train["output"] = train["output"][,out_idx]
+    train["output"] = train["output"][:,out_idx]
     valid = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="validation", test_fold=test_fold, valid_fold=valid_fold)
-    valid["output"] = valid["output"][,out_idx]
+    if valid_fold is not None:
+        valid["output"] = valid["output"][:,out_idx]
     n_training = train[input_names[0]].shape[0]
     print(f"{n_training} training examples")
     print("\n\n")
@@ -160,24 +159,27 @@ else:
 
 #build model
 #model = model_utils.build_model(params=params, train=train, input_names=input_names)
-exec(f"model = model_utils.build_{model_descriptor}()")
+#exec(f"model = model_utils.build_{model_descriptor}()")
+model = build_nemo()
 print(model.summary())
 print("\n\n")
 
-#plot model
-plot_model(model,
-        to_file=(modeldir + '/' + model_descriptor + '_model.png'),
-        show_shapes=True,
-        show_dtype=False,
-        show_layer_names=True,
-        rankdir='TB',
-        expand_nested=False,
-        dpi=96,
-        layer_range=None,
-        show_layer_activations=True,
-        show_trainable=False
-        )
-
+if N == 1:
+    #plot model
+    plot_model(model,
+            to_file=(modeldir + '/' + model_descriptor + '_model.png'),
+            show_shapes=True,
+            show_dtype=False,
+            show_layer_names=True,
+            rankdir='TB',
+            expand_nested=False,
+            dpi=96,
+            layer_range=None,
+            show_layer_activations=True,
+            show_trainable=False
+            )
+    model_json = model.get_config()
+    yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
 
 
 #### callbacks ####
@@ -349,7 +351,7 @@ if full or (valid_fold is None):
         print(f"Holding out fold {str(test_fold)} as a test set and training on the rest")
     print(f"Organism: {organism}")
     model.fit([train[i] for i in input_names],
-              train["output"], # TODO adjust outputs
+              train["output"],
               batch_size=batch,
               epochs=num_epochs,
               validation_data=None,
@@ -359,7 +361,7 @@ else:
     print(f"Training model with fold configuration test {str(test_fold)} valid {str(valid_fold)}")
     print(f"Organism: {organism}")
     model.fit([train[i] for i in input_names],
-              train["output"], # TODO adjust outputs
+              train["output"],
               batch_size=batch,
               epochs=num_epochs,
               validation_data=([valid[i] for i in input_names],
@@ -371,5 +373,3 @@ else:
 if model_utils.to_bool(config['use_one_cycle_optimization']):
     model.save_weights(os.path.join(outdir,model_outfile))
     #else saved via checkpoint cb
-model_json = model.get_config()
-yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)

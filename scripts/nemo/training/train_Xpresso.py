@@ -82,7 +82,7 @@ N = int(sys.argv[1]) # rep number
 tpm_type=argv[2] # output: max or median
 
 
-if tmp_type == "max" or tpm_type == "maximum":
+if tpm_type == "max" or tpm_type == "maximum":
     out_idx = 4
 else:
     out_idx = 2
@@ -109,9 +109,9 @@ inT = 0
 #########################
 
 train = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="training", test_fold=test_fold, valid_fold=valid_fold)
-train["output"] = train["output"][,out_idx]
+train["output"] = train["output"][:,out_idx]
 valid = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="validation", test_fold=test_fold, valid_fold=valid_fold)
-valid["output"] = valid["output"][,out_idx]
+valid["output"] = valid["output"][:,out_idx]
 n_training = train[input_names[0]].shape[0]
 print(f"{n_training} training examples")
 print("\n\n")

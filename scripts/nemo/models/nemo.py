@@ -48,7 +48,9 @@ from tensorflow.keras.layers import Input, Conv1D, AveragePooling1D, Flatten, Co
 from tensorflow_addons.layers import GELU
 
 
-def build_nemo(promoter, temrinator):
+def build_nemo():
+    promoter = Input(shape=(6200, 4), name="promoter")
+    terminator = Input(shape=(6200, 4), name="terminator")
 
     ini = "glorot_normal"
     def get_stride(fraction, size):
@@ -115,7 +117,7 @@ def build_nemo(promoter, temrinator):
     T = Flatten()(T)
 
     # dense layers
-    D = Concatenante(axis=1)([P,T])
+    D = Concatenate(axis=1)([P,T])
     D = Dense(750, kernel_initializer=ini)(D)
     D = BatchNormalization(momentum=0.81669)(D)
     D = GELU(approximate=False)(D)
