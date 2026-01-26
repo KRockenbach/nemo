@@ -94,8 +94,8 @@ if tpm_type == "max" or tpm_type == "maximum":
 else:
     out_idx = 2
 
-train_output = train["output"] = train_dict["output"][,out_idx] # median or max
-valid_output = train["output"] = valid_dict["output"][,out_idx] # median or max
+train_output = train["output"] = train_dict["output"][:,out_idx] # median or max
+valid_output = train["output"] = valid_dict["output"][:,out_idx] # median or max
 
 del train_dict, valid_dict
 

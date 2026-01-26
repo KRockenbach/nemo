@@ -51,7 +51,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras.utils import plot_model
 from ..utils import model_utils
-from ..models.Basenji-5k import *
+from ..models.Basenji import *
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import R2Score
 

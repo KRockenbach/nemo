@@ -115,8 +115,8 @@ for submodel_index range(27):
     else:
         out_idx = 2 # median
 
-    train_output = train_dict["output"][,out_idx]
-    valid_output = valid_dict["output"][,out_idx]
+    train_output = train_dict["output"][:,out_idx]
+    valid_output = valid_dict["output"][:,out_idx]
 
     if submodel_index == 0:
         submodel_dict["ID"] = train_dict["ID"]
