@@ -72,6 +72,8 @@ study_name = sys.argv[1]
 # outdir with config needs do be created beforehand
 outdir = os.path.join("..", "model_configs", study_name)
 
+os.makedirs(outdir, exist_ok=True)
+
 storage = optuna.storages.RDBStorage(
     url="sqlite:///{}/{}.db".format(outdir, study_name),
     heartbeat_interval=30

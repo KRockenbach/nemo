@@ -1,0 +1,15 @@
+STUDY STATISTICS
+
+Total number of trials:	4
+Number of pruned trials:	0
+Number of complete trials:	4
+Number of failed trials:	0
+Best trial:
+
+FrozenTrial(number=2, state=1, values=[0.21774877607822418], datetime_start=datetime.datetime(2026, 1, 23, 15, 10, 59, 573414), datetime_complete=datetime.datetime(2026, 1, 23, 15, 44, 0, 268715), params={'P_branch': 'P_params', 'T_branch': 'T_params'}, user_attrs={}, system_attrs={'grid_id': 2, 'search_space': {'P_branch': ['P_params', 'T_params'], 'T_branch': ['P_params', 'T_params']}}, intermediate_values={}, distributions={'P_branch': CategoricalDistribution(choices=('P_params', 'T_params')), 'T_branch': CategoricalDistribution(choices=('P_params', 'T_params'))}, trial_id=3, value=None)
+Value:	0.21774877607822418
+
+HYPERPARAMETERS:
+
+	P_branch:	P_params
+	T_branch:	T_params

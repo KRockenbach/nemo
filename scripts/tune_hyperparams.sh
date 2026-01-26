@@ -36,12 +36,14 @@
 #version: 1.0.0
 #usage:
 #      bash tune_hyperparams.sh 0 optimize_architecture.py architecture_optimized 1100 200 False
-#      CUDA_VISIBLE_DEVICES=0 python validate_architecture.py architectire_validated False
+#      CUDA_VISIBLE_DEVICES=0 python -m nemo.hyperparam_tuning.validate_architecture.py architectire_validated
 #      bash tune_hyperparams.sh 0 finetune_architecture.py architecture_finetuned 1100 200 False
 #      bash tune_hyperparams.sh 0 optimize_learning.py learning_optimized 510 300 True
 #      bash tune_hyperparams.sh 0 finetune_architecture.py learning_finetuned 510 300 True
 #      bash tune_hyperparams.sh 0 final_touches.py nemo 310 310 True
-#      bash tune_hyperparams.sh 0 expression_dynamics.py nemo2 310 310 True
+#      CUDA_VISIBLE_DEVICES=1 python -m nemo.hyperparam_tuning.validate_final_architecture final_architectire_validated
+#      bash tune_hyperparams.sh 0 expression_dynamics.py nemo2_foundation 1100 50 True
+#      bash tune_hyperparams.sh 0 expression_dynamics_2.py nemo2_finetuning 250 50 True
 #notes:
 #      Script can be executed multiple times in parallel, if multiple GPUs are available. The first argument should be changed accordingly
 #      Parallel optimization will be performed using a common database

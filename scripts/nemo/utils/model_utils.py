@@ -672,7 +672,7 @@ def build_nemo():
     terminator = Input(shape=(6200, 4), name="terminator")
     P = build_nemo_promoter(promoter)
     T = build_nemo_temrinator(terminator)
-    D = Concatenante(axis=1)([P,T])
+    D = Concatenate(axis=1)([P,T])
     D = Dense(750, kernel_initializer=ini)(D)
     D = BatchNormalization(momentum=0.81669)(D)
     D = GELU(approximate=False)(D)
