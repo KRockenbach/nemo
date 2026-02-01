@@ -137,14 +137,14 @@ def get_scaler(train_table, out_dir, test_fold, valid_fold):
     os.makedirs(scaler_dir, exist_ok=True) # equivalent to mkdir -p
     if valid_fold is None:
         dump(scaler, open(os.path.join(scaler_dir, f'scaler_{test_fold}.pkl'), 'wb'))
-        if len(train_table.columns) == 11:
+        if len(train_table.columns) == (10+num_outputs):
             # fit on all numeric columns of train table
             mapper.fit(train_table)
             # save mapper
             dump(mapper, open(os.path.join(scaler_dir, f'mapper_{test_fold}.pkl'), 'wb'))
     else:
         dump(scaler, open(os.path.join(scaler_dir, f'scaler_{test_fold}_{valid_fold}.pkl'), 'wb'))
-        if len(train_table.columns) == 11:
+        if len(train_table.columns) == (10+num_outputs):
             # fit on all numeric columns of train table
             mapper.fit(train_table)
             # save mapper

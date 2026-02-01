@@ -36,7 +36,7 @@ from tensorflow.keras.models import Model,load_model
 channels_num = 512
 
 def exponential_linspace_int(initial_value, target_value, num_layers):
-    factor = (target_value / initial_value) ** (1 / num_layers))
+    factor = (target_value / initial_value) ** (1 / num_layers)
     values = []
     # Calculate and store values
     value = initial_value
@@ -87,7 +87,7 @@ def basenji_model(input_shape=[5000, 4], W = 15,L=11):
     x = BatchNormalization()(x)
     x = GELU()(x)
     x = MaxPooling1D(pool_size= 3 )(x)  
-    Ci_steps = exponential_linspace_int(0.5*channels_num, channels_num, 6, divisible_by=1) 
+    Ci_steps = exponential_linspace_int(0.5*channels_num, channels_num, 6) 
     for Ci in Ci_steps:
         x = conv_block(x=x, C=Ci, W=5, D=1)
         x = MaxPooling1D(pool_size=2)(x)

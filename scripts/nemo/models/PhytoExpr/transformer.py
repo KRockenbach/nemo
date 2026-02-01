@@ -47,7 +47,7 @@ def residual_block(x,short_x,batch_activate = False,conv_activate=True):
         x = BatchActivate(x)
     return x
 
-def conv_tower(x,tower_poolsize,kernel_size,conv_tower_num,dim,pooling_type='max'):
+def conv_tower(x,tower_poolsize,conv_tower_num,dim,pooling_type='max'):
     filter=exponential_linspace_int(dim//2, dim, conv_tower_num, divisible_by = 128)
     for filter_num in filter:
         x_forres=convolution_block(x,filter_num, size = 5, activation=True,padding='same')

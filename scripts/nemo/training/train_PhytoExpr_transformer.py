@@ -46,21 +46,25 @@ notes: use nemo environment to run this script
 
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import *
 from tensorflow.keras.callbacks import EarlyStopping
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.optimizers import Adam
+#from tensorflow.keras.utils import to_categorical
+#from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
+from tensorflow.keras.metrics import R2Score
+from tensorflow.keras.utils import plot_model
 from sys import argv
 import random
 import os
 import math
 from ..models.PhytoExpr.transformer import *
-from yaml import dump
+#from yaml import dump
 from ..utils import model_utils
 import tensorflow.keras.backend as K
 
-N = int(sys.argv[1])
+N = int(argv[1])
 
 tpm_type=argv[2]             # median, max
 test_fold=0
@@ -70,13 +74,15 @@ inside=1000
 batch_size_train=64
 batch_size_test=512
 
+root_dir=".."
+
 model_descriptor = "PhytoExpr_transformer"
 modeldir = os.path.join(root_dir, 'model_configs', model_descriptor)
 resultdir = modeldir.replace('model_configs', 'model_weights')
 mask_type = "masked"
 partition_type = "graphpart_Bn"
 outdir = os.path.join(resultdir, "Bnapus", f'{mask_type}_{partition_type}')
-datadir=os.path.join(root_dir, "data", organism, f'{mask_type}_{partition_type}_fold_data')
+datadir=os.path.join(root_dir, "data", "Bnapus", f'{mask_type}_{partition_type}_fold_data')
 
 
 data_config = {'use_promoter': 'True', 'use_terminator': 'True', 'use_halflife': 'False'}
@@ -85,8 +91,8 @@ train_dict = model_utils.get_set(data_config, outP=outside, inP=inside, outT=out
 valid_dict = model_utils.get_set(data_config, outP=outside, inP=inside, outT=outside, inT=inside, datadir=datadir, set="validation", test_fold=test_fold, valid_fold=valid_fold)
 
 # concatenate promoter and terminator
-train_input = np.concatenate(train_dict["promoter"], train_dict["terminator"], axis=1)
-valid_input = np.concatenate(valid_dict["promoter"], valid_dict["terminator"], axis=1)
+train_input = np.concatenate((train_dict["promoter"], train_dict["terminator"]), axis=1)
+valid_input = np.concatenate((valid_dict["promoter"], valid_dict["terminator"]), axis=1)
 
 # get correct target output
 if tpm_type == "max" or tpm_type == "maximum":
@@ -94,8 +100,8 @@ if tpm_type == "max" or tpm_type == "maximum":
 else:
     out_idx = 2
 
-train_output = train["output"] = train_dict["output"][:,out_idx] # median or max
-valid_output = train["output"] = valid_dict["output"][:,out_idx] # median or max
+train_output = train_dict["output"][:,out_idx] # median or max
+valid_output = valid_dict["output"][:,out_idx] # median or max
 
 del train_dict, valid_dict
 
@@ -116,9 +122,9 @@ callbacks=[EarlyStopping(monitor='val_loss',patience=2,verbose=0,restore_best_we
 logdir = os.path.join(outdir, 'logs')
 logdir = logdir.replace("model_weights", "results")
 os.makedirs(logdir, exist_ok=True)
-logpath = os.path.join(logdir, f'trainlog_rep{N}.csv')
+logpath = os.path.join(logdir, f'trainlog_{tpm_type}_n_{N}.csv')
 # log metrics/losses at each epoch
-csvlog_cb = tf.keras,callbacks.CSVLogger(logpath, append=True, separator='\t')
+csvlog_cb = tf.keras.callbacks.CSVLogger(logpath, append=True, separator='\t')
 callbacks.append(csvlog_cb)
 adam=Adam(learning_rate=0.0001, beta_1=0.9, beta_2=0.999, decay=0.00, amsgrad=False)
 model.compile(optimizer=adam,
@@ -126,13 +132,13 @@ model.compile(optimizer=adam,
               metrics=['mse', R2Score()])
 model.fit(train_input,
               train_output,
-              batch_size=batch_size,
+              batch_size=batch_size_train,
               epochs=100,
               validation_data=(valid_input,
                                valid_output),
               callbacks=callbacks,
               verbose=1) # display progress bars
-model.save(os.path.join(outdir, f'TransformerModel_rep{N}_{tpm_type}.h5'))
+model.save(os.path.join(outdir, f'TransformerModel_{tpm_type}_n_{N}.h5'))
 if N==1:
     #plot model
     plot_model(model,
@@ -148,7 +154,7 @@ if N==1:
                show_trainable=False
                )
     model_json = model.get_config()
-    yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
+    #dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
 del model
 
 

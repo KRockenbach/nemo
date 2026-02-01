@@ -54,12 +54,12 @@ from ..utils import model_utils
 from ..models.Basenji import *
 import tensorflow.keras.backend as K
 from tensorflow.keras.metrics import R2Score
-
+#import yaml
 
 root_dir = '..' # relative to bash script
 
 organism="Bnapus"
-model_descriptor = "xpresso"
+model_descriptor = "Basenji-5K"
 modeldir = os.path.join(root_dir, 'model_configs', model_descriptor)
 resultdir = modeldir.replace('model_configs', 'model_weights')
 orgdir = os.path.join(resultdir, organism)
@@ -84,13 +84,19 @@ tpm_type = sys.argv[2]
 
 config = {"use_promoter": 'True', "use_terminator": 'False', "use_halflife": 'False'}
 
+if tpm_type == "median":
+    out_idx = 2
+elif tpm_type == "max" or tpm_type == "maximum":
+    out_idx = 4
+else:
+    raise Exception("wrong tpm type")
 
 # get data for the training and validation set depending on config
 #########################
 train = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="training", test_fold=test_fold, valid_fold=valid_fold)
-train["output"] = train["output"][,2] # median
+train["output"] = train["output"][:,out_idx] # median or max
 valid = model_utils.get_set(config, outP=outP, inP=inP, outT=outT, inT=inT, datadir=datadir, set="validation", test_fold=test_fold, valid_fold=valid_fold)
-valid["output"] = valid["output"][,2] # median
+valid["output"] = valid["output"][:,out_idx] # median or max
 n_training = train[input_names[0]].shape[0]
 print(f"{n_training} training examples")
 print("\n\n")
@@ -109,7 +115,7 @@ def decay(epoch):
       return 1e-5
 
 
-callbacks = [tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(outdir, f"Basenji-5K_rep{N}_{tpm_type}.h5"),
+callbacks = [tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(outdir, f"Basenji-5K_{tpm_type}_n_{N}.h5"),
                                         monitor='val_loss',
                                         verbose=0,
                                         mode='auto' ,
@@ -121,9 +127,9 @@ callbacks = [tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(outdir, f"
 logdir = os.path.join(outdir, 'logs')
 logdir = logdir.replace("model_weights", "results")
 os.makedirs(logdir, exist_ok=True)
-logpath = os.path.join(logdir, f'trainlog_rep{N}_{tpm_tpye}.csv')
+logpath = os.path.join(logdir, f'trainlog_{tpm_type}_n_{N}.csv')
 # log metrics/losses at each epoch
-csvlog_cb = tf.keras,callbacks.CSVLogger(logpath, append=True, separator='\t')
+csvlog_cb = tf.keras.callbacks.CSVLogger(logpath, append=True, separator='\t')
 callbacks.append(csvlog_cb)
 
 
@@ -137,7 +143,7 @@ model.compile(loss=tf.keras.losses.MeanSquaredError(),
 batch_size = 32
 epochs = 100
 
-print(f"Training rep {N} of Basenji-5K, predicitng {tpm_type}")
+print(f"Training rep {N} of Basenji-5K, predicting {tpm_type}")
 print(f"Organism: {organism}")
 
 if N == 1:
@@ -156,15 +162,15 @@ if N == 1:
             )
 
     model_json = model.get_config()
-    yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
+    #yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
 
 
 model.fit(train["promoter"],
-          train["output"][:,5], # maximum expression
+          train["output"], # maximum expression
           batch_size=batch_size,
           epochs=epochs,
           validation_data=(valid["promoter"],
-                           valid["output"][:,5]),
+                           valid["output"]),
           callbacks=callbacks,
           verbose=1) # display progress bars
 del model

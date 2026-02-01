@@ -55,7 +55,7 @@ from tensorflow.keras.utils import plot_model
 from tensorflow.keras.metrics import R2Score
 from ..utils import model_utils
 import tensorflow.keras.backend as K
-from yaml import dump
+#from yaml import dump
 from ..models.Xpresso import build_xpresso
 
 print("\n\n")
@@ -79,7 +79,7 @@ valid_fold = 1
 
 N = int(sys.argv[1]) # rep number
 
-tpm_type=argv[2] # output: max or median
+tpm_type=sys.argv[2] # output: max or median
 
 
 if tpm_type == "max" or tpm_type == "maximum":
@@ -141,7 +141,7 @@ if N == 1:
             )
 
     model_json = model.get_config()
-    yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
+    #dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
 
 
 #### callbacks ####
@@ -150,14 +150,14 @@ logdir = logdir.replace("model_weights", "results")
 os.makedirs(logdir, exist_ok=True)
 
 # val_loss needed for model checkpoints
-model_outfile = f"{model_descriptor}_rep{N}_{tpm_type}.h5"
+model_outfile = f"{model_descriptor}_n_{N}_{tpm_type}.h5"
 check_cb = ModelCheckpoint(os.path.join(outdir, model_outfile),
                            monitor='val_loss', verbose=1,
                            save_best_only=True, mode='min')
 
 # stop if val_loss has not decresed for 10 epochs
 earlystop_cb = EarlyStopping(monitor='val_loss', patience=10, verbose=1, mode='min')
-logpath = os.path.join(logdir, f'trainlog_rep{N}_{tpm_type}.csv')
+logpath = os.path.join(logdir, f'trainlog_n_{N}_{tpm_type}.csv')
 
 
 # terminate on NaN training loss

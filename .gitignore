@@ -7,6 +7,7 @@ scripts/nemo/utils/one_cycle_scheduler_tf/
 results/
 unpack.sh
 validation/
+scripts/*tmp*
 
 */__pycache__/
 

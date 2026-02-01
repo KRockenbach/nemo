@@ -705,9 +705,9 @@ def build_simple_encoder(input, momentum=0.81669):
         x = AveragePooling1D(2*pl_stride, strides = pl_stride, padding='same')(x)
         return x
 
-    X = conv_block(input, 50, 5)
-    X = conv_block(X, 100, 10)
-    X = conv_block(X, 200, 31) # last conv kernels cover entire input
+    X = conv_block(input, 55, 5)
+    X = conv_block(X, 120, 10)
+    X = conv_block(X, 250, 31) # last conv kernels cover entire input
 
 
     X = Flatten()(X)

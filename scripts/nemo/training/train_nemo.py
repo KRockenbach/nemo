@@ -63,7 +63,7 @@ import tensorflow.keras.backend as K
 from tensorflow.keras.optimizers.legacy import Nadam
 from ..utils.one_cycle_scheduler_tf.one_cycle_tf.one_cycle_scheduler import OneCycle
 from tensorflow_addons.optimizers.weight_decay_optimizers import *
-from yaml import dump
+#from yaml import dump
 from ..models.nemo import build_nemo
 
 print("\n\n")
@@ -179,7 +179,7 @@ if N == 1:
             show_trainable=False
             )
     model_json = model.get_config()
-    yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
+    #dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
 
 
 #### callbacks ####
@@ -188,32 +188,32 @@ if logging:
     logdir = logdir.replace("model_weights", "results")
     os.makedirs(logdir, exist_ok=True)
 if full:
-    model_outfile = f"{model_descriptor}_full.h5"
+    model_outfile = f"{model_descriptor}_full_{tpm_type}.h5"
     if logging:
         # log metrics/losses at each epoch
         logpath = os.path.join(logdir, 'trainlog_full.csv')
     if N is not None:
         print(f"repeat: {N}")
-        model_outfile = f"{model_descriptor}_full_n_{N}.h5"
+        model_outfile = f"{model_descriptor}_full_n_{N}_{tpm_type}.h5"
         if logging:
-            logpath = os.path.join(logdir, f'trainlog_full_n_{N}.csv')
+            logpath = os.path.join(logdir, f'trainlog_full_n_{N}_{tpm_type}.csv')
     if logging:
         lrpath = logpath.replace("trainlog", "lr_log")
 elif valid_fold is None:
-    model_outfile = f"{model_descriptor}_t_{str(test_fold)}.h5"
+    model_outfile = f"{model_descriptor}_t_{str(test_fold)}_{tpm_type}.h5"
     if N is not None:
         print(f"repeat: {N}")
-        model_outfile = model_outfile.replace(".h5", f"_n_{N}.h5")
+        model_outfile = model_outfile.replace(".h5", f"_n_{N}_{tpm_type}.h5")
     if logging:
         # log metrics/losses at each epoch
         logpath = os.path.join(logdir, f"trainlog_t_{str(test_fold)}.csv")
         lrpath = logpath.replace("trainlog", "lr_log")
 else:
     # val_loss needed for model checkpoints
-    model_outfile = f"{model_descriptor}_t_{str(test_fold)}_v_{str(valid_fold)}.h5"
+    model_outfile = f"{model_descriptor}_t_{str(test_fold)}_v_{str(valid_fold)}_{tpm_type}.h5"
     if N is not None:
         print(f"repeat: {N}")
-        model_outfile = model_outfile.replace(".h5", f"_n_{N}.h5")
+        model_outfile = model_outfile.replace(f"{tpm_type}.h5", f"_n_{N}_{tmp_type}.h5")
     check_cb = ModelCheckpoint(os.path.join(outdir, model_outfile),
                            monitor='val_loss', verbose=1,
                            save_best_only=True, mode='min')

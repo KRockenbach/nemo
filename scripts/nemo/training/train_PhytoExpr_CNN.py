@@ -46,17 +46,20 @@ notes: use nemo environment to run this script
 
 import numpy as np
 import pandas as pd
-from keras.models import Model, load_model
-from keras.layers import *
-from keras.callbacks import EarlyStopping
-from keras.utils import to_categorical
+import tensorflow as tf
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.layers import *
+from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.utils import plot_model
+from tensorflow.keras.metrics import R2Score
+#from tf.keras.utils import to_categorical
 from sys import argv
 import pickle
 import random
 import os
 import math
 from ..models.PhytoExpr.CNN_submodels import *
-from yaml import dump
+#from yaml import dump
 
 import keras.backend as K
 from sklearn import linear_model
@@ -64,12 +67,13 @@ from sklearn.metrics import mean_squared_error
 from ..utils import model_utils
 
 
-N = int(sys.argv[1])
+N = int(argv[1])
 
-root=".."
 tpm_type=argv[2]             # median, max
 test_fold=0
 valid_fold=1
+
+root_dir=".."
 
 model_descriptor = "PhytoExpr_CNN"
 modeldir = os.path.join(root_dir, 'model_configs', model_descriptor)
@@ -77,80 +81,83 @@ resultdir = modeldir.replace('model_configs', 'model_weights')
 mask_type = "masked"
 partition_type = "graphpart_Bn"
 outdir = os.path.join(resultdir, "Bnapus", f'{mask_type}_{partition_type}')
-datadir=os.path.join(root_dir, "data", organism, f'{mask_type}_{partition_type}_fold_data')
+datadir=os.path.join(root_dir, "data", "Bnapus", f'{mask_type}_{partition_type}_fold_data')
 os.makedirs(outdir, exist_ok=True)
 os.makedirs(modeldir, exist_ok=True)
 
-config = pd.read_csv(os.path.join(modeldir, "ensemble_model_cfg.csv"), delimiter=";", header='0')
+config = pd.read_csv(os.path.join(modeldir, "ensemble_model_cfg.csv"), delimiter=";", header=0)
 
-model_types = config[:,"model_type"].tolist()
-outside_intervals = config[:,"outside_interval"].tolist()
-inside_intervals = config[:,"inside_interval"].tolist()
+
+
+model_types = config.loc[:,"type"].tolist()
+outside_intervals = config.loc[:,"outside_interval"].tolist()
+inside_intervals = config.loc[:,"inside_interval"].tolist()
 batch_size=128
-param_df = config.iloc[:,4:-2]
-
+param_df = config.iloc[:,4:-1]
 
 K.clear_session()
 x = []
 submodel_dict={}
-for submodel_index range(27):
+
+outside=4000
+inside=1000
+
+data_config = {'use_promoter': 'True', 'use_terminator': 'True', 'use_halflife': 'False'}
+train_dict = model_utils.get_set(data_config, outP=outside, inP=inside, outT=outside, inT=inside, datadir=datadir, set="training", test_fold=test_fold, valid_fold=valid_fold)
+valid_dict = model_utils.get_set(data_config, outP=outside, inP=inside, outT=outside, inT=inside, datadir=datadir, set="validation", test_fold=test_fold, valid_fold=valid_fold)
+
+# concatenate promoter and terminator
+train_input = np.concatenate((train_dict["promoter"], train_dict["terminator"]), axis=1)
+valid_input = np.concatenate((valid_dict["promoter"], valid_dict["terminator"]), axis=1)
+
+# get correct target output
+if tpm_type == "max" or tpm_type == "maximum":
+    out_idx = 4 # maximum
+else:
+    out_idx = 2 # median
+
+train_output = train_dict["output"][:,out_idx]
+valid_output = valid_dict["output"][:,out_idx]
+
+submodel_dict["ID"] = train_dict["ID"]
+submodel_dict["actual"] = train_output
+
+del train_dict, valid_dict
+
+input_length=2*(outside+inside)
+input=Input(shape=(input_length,4))
+for submodel_index in range(27):
     prefix = f"submodel{submodel_index}_"
     model_type = model_types[submodel_index] # C2D3, C3D3, C4D3, C2D2, C3D2, C4D2
     outside = outside_intervals[submodel_index]
     inside = inside_intervals[submodel_index]
     params = param_df.iloc[submodel_index,:].tolist()
 
-    data_config = {'use_promoter': 'True', 'use_terminator': 'True', 'use_halflife': 'False'}
-
-    train_dict = model_utils.get_set(data_config, outP=outside, inP=inside, outT=outside, inT=inside, datadir=datadir, set="training", test_fold=test_fold, valid_fold=valid_fold)
-    valid_dict = model_utils.get_set(data_config, outP=outside, inP=inside, outT=outside, inT=inside, datadir=datadir, set="validation", test_fold=test_fold, valid_fold=valid_fold)
-
-    # concatenate promoter and terminator
-    train_input = np.concatenate(train_dict["promoter"], train_dict["terminator"], axis=1)
-    valid_input = np.concatenate(valid_dict["promoter"], valid_dict["terminator"], axis=1)
-
-    # get correct target output
-    if tpm_type == "max" or tpm_type == "maximum":
-        out_idx = 4 # maximum
-    else:
-        out_idx = 2 # median
-
-    train_output = train_dict["output"][:,out_idx]
-    valid_output = valid_dict["output"][:,out_idx]
-
-    if submodel_index == 0:
-        submodel_dict["ID"] = train_dict["ID"]
-        submodel_dict["actual"] = train_output
-
-    del train_dict, valid_dict
-
-    # build the model
-    input_length=2*(outside+inside)
-
-    input=Input(shape=(input_length,4))
-    exec(f"x{submodel_index}=build_{model_type}(input,parameters,prefix)")
+    # build submodel
+    exec(f"x{submodel_index}=build_{model_type}(input,outside,params,prefix)")
     exec(f"x.append(x{submodel_index})")
     model=None
     exec(f"model=Model(inputs=input,outputs=x{submodel_index})")
     model.summary()
 
     total_params = model.count_params()
-    flatten_width = model.get_layer('flatten').output_shape[1]
+    flatten_width = model.get_layer(f'{prefix}flatten').output_shape[1]
 
     # training
     callbacks=[EarlyStopping(monitor='val_loss',patience=2,verbose=0,restore_best_weights=True)]
     logdir = os.path.join(outdir, 'logs')
     logdir = logdir.replace("model_weights", "results")
     os.makedirs(logdir, exist_ok=True)
-    logpath = os.path.join(logdir, f'trainlog_rep{N}.csv')
+    logpath = os.path.join(logdir, f'trainlog_{tpm_type}_n_{N}.csv')
     # log metrics/losses at each epoch
-    csvlog_cb = tf.keras,callbacks.CSVLogger(logpath, append=True, separator='\t')
+    csvlog_cb = tf.keras.callbacks.CSVLogger(logpath, append=True, separator='\t')
     callbacks.append(csvlog_cb)
 
     model.compile(optimizer='adam',
                   loss='mean_squared_error',
-                  metrics=['mse'])
+                  metrics=['mse', R2Score()])
 
+    print(f"{N}, {tpm_type}, submodel {submodel_index}")
     model.fit(train_input,
           train_output,
           batch_size=batch_size,
@@ -160,8 +167,10 @@ for submodel_index range(27):
           callbacks=callbacks,
           verbose=1) # display progress bars
 
-    model.save(os.path.join(outdir, f'submodel{submodel_index}_rep{N}_{tpm_type}.h5'))
-    submodel_dict[f"predictions{submodel_index}"] = model.predict(train_input, batch_size=batch_size)
+    model.save(os.path.join(outdir, f'submodel{submodel_index}_{tpm_type}_n_{N}.h5'))
+    preds = model.predict(train_input, batch_size=batch_size)
+    reshaped_preds = preds.reshape(submodel_dict["ID"].shape)
+    submodel_dict[f"predictions{submodel_index}"] = reshaped_preds
     del model
 
 x=Concatenate()(x)
@@ -170,8 +179,8 @@ x=Dense(1,name='second_layer_model_tpm')(x)
 ensemble_model = Model(inputs=input,outputs=x)
 submodels = []
 for submodel_index in range(27):
-    exec("submodel{submodel_index} = Model(inputs=ensemble_model.input,outputs=[ensemble_model.get_layer('submodel{submodel_index}_tpm_output').output])")
-    exec("submodels.append(submodel{submodel_index})")
+    exec(f"submodel{submodel_index} = Model(inputs=ensemble_model.input,outputs=[ensemble_model.get_layer('submodel{submodel_index}_tpm_output').output])")
+    exec(f"submodels.append(submodel{submodel_index})")
 
 
 ##########################################################################################################
@@ -188,7 +197,7 @@ def weights_for_the_second_layer_model():
     model = linear_model.LinearRegression()
     model.fit(x_train,y_train)
 
-    weights = [np.expand_dims(model.coef_,1),np.expand_dims(model.intercept_,1)]
+    weights = [model.coef_[:, np.newaxis], model.intercept_.reshape(1,)]
     return weights
 
 weights = weights_for_the_second_layer_model()
@@ -207,13 +216,13 @@ def get_weights_of_first_layer_model(path):
 
 # transfer weights
 for model_index in range(27):
-    print 'MODEL_INDEX: '+str(model_index)
-    weights = get_weights_of_first_layer_model(os.path.join(outdir, f'submodel{submodel_index}_rep{N}_{tpm_type}.h5'))
+    print('MODEL_INDEX: '+str(model_index))
+    weights = get_weights_of_first_layer_model(os.path.join(outdir, f'submodel{model_index}_{tpm_type}_n_{N}.h5'))
     submodels[model_index].set_weights(weights)
     submodels[model_index].trainable = False
 
-ensemble_model.save(os.path.join(outdir, f'EnsembleModel_rep{N}_{tpm_type}.h5'))
-if N == 1:
+ensemble_model.save(os.path.join(outdir, f'ensemble_CNN_{tpm_type}_n_{N}.h5'))
+if N == 0:
     #plot model
     plot_model(model,
             to_file=(modeldir + '/ensemble_model.png'),
@@ -228,5 +237,5 @@ if N == 1:
             show_trainable=False
             )
     model_json = ensemble_model.get_config()
-    yaml.dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
+    #dump(model_json, os.path.join(modeldir, "keras_config.yaml"), allow_unicode=True)
 del ensemble_model
