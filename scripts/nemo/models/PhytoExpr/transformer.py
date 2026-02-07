@@ -84,7 +84,8 @@ def final(x,dim,crop_len=0,dropout_rate=0.3):
    x=Dropout(dropout_rate)(x)
    x=Activation('gelu')(x)
    x=Flatten()(x)
-   x=Dense(1,activation = 'softplus',name='tpm_output')(x)
+   # output activation changed from softplus to linear to allow for negative output values (expression was standard scaled)
+   x=Dense(1,activation = 'linear',name='tpm_output')(x)
    return x
 
 def procheck(x):

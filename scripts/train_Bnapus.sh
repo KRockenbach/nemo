@@ -45,25 +45,25 @@ source ${CONDA_PREFIX}/etc/profile.d/conda.sh
 
 mamba activate nemo
 
-for MASK in "masked" "clear" "only_cds"
-do
-  for PARTITION in "graphpart" "random"
-  do
-    N="None"
-    ORGANISM="Bnapus"
-    TPM_TYPE="median"
-    for TEST in {0..9}
-    do
-      VALID="None"
-      CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
-    done
-    # train on full set
-    VALID="None"
-    TEST="None"
-    PARTITION="graphpart"
-    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
-  done
-done
+#for MASK in "masked" "clear" "only_cds"
+#do
+#  for PARTITION in "graphpart" "random"
+#  do
+#    N="None"
+#    ORGANISM="Bnapus"
+#    TPM_TYPE="median"
+#    for TEST in {0..9}
+#    do
+#      VALID="None"
+#      CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
+#    done
+#    # train on full set
+#    VALID="None"
+#    TEST="None"
+#    PARTITION="graphpart"
+#    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
+#  done
+#done
 
 MASK="masked"
 PARTITION="graphpart"
@@ -71,17 +71,17 @@ ORGANISM="Bnapus"
 PARTITION="graphpart_Bn"
 for N in {0..9}
 do
-  for TPM_TYPE in "max" "median"
+  for TPM_TYPE in "max" #"median"
   do
     TEST=0
     VALID=1
-    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Xpresso $N $TPM_TYPE
-    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Basenji-5K $N $TPM_TYPE
-    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_CNN $N $TPM_TYPE
-    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_transformer $N $TPM_TYPE
+    #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Xpresso $N $TPM_TYPE
+    #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Basenji-5K $N $TPM_TYPE
+    #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_CNN $N $TPM_TYPE
+    #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_transformer $N $TPM_TYPE
     CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
-    VALID="None"
-    CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
+    #VALID="None"
+    #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_nemo $ORGANISM $MASK $PARTITION $TEST $VALID $N $TPM_TYPE
   done
 done
 

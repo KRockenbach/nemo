@@ -203,7 +203,7 @@ elif valid_fold is None:
     model_outfile = f"{model_descriptor}_t_{str(test_fold)}_{tpm_type}.h5"
     if N is not None:
         print(f"repeat: {N}")
-        model_outfile = model_outfile.replace(".h5", f"_n_{N}_{tpm_type}.h5")
+        model_outfile = model_outfile.replace(f"{tpm_type}.h5", f"_n_{N}_{tpm_type}.h5")
     if logging:
         # log metrics/losses at each epoch
         logpath = os.path.join(logdir, f"trainlog_t_{str(test_fold)}.csv")
@@ -213,7 +213,7 @@ else:
     model_outfile = f"{model_descriptor}_t_{str(test_fold)}_v_{str(valid_fold)}_{tpm_type}.h5"
     if N is not None:
         print(f"repeat: {N}")
-        model_outfile = model_outfile.replace(f"{tpm_type}.h5", f"_n_{N}_{tmp_type}.h5")
+        model_outfile = model_outfile.replace(f"{tpm_type}.h5", f"_n_{N}_{tpm_type}.h5")
     check_cb = ModelCheckpoint(os.path.join(outdir, model_outfile),
                            monitor='val_loss', verbose=1,
                            save_best_only=True, mode='min')

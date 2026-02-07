@@ -221,7 +221,7 @@ for model_index in range(27):
     submodels[model_index].set_weights(weights)
     submodels[model_index].trainable = False
 
-ensemble_model.save(os.path.join(outdir, f'ensemble_CNN_{tpm_type}_n_{N}.h5'))
+ensemble_model.save(os.path.join(outdir, f'PhytoExpr_CNN_t_0_v_1_n_{N}_{tpm_type}.h5'))
 if N == 0:
     #plot model
     plot_model(model,

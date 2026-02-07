@@ -44,7 +44,7 @@ mamba activate nemo
 
 ROOT=".."
 
-echo -e "model\ttest_organism\tmasking\tpartitioning\ttrain_organism\ttest_fold\tvalid_fold\tN\trsq" > "${ROOT}/results/rsq_df.tsv"
+#echo -e "model\ttest_organism\tmasking\tpartitioning\ttrain_organism\ttest_fold\tvalid_fold\tN\trsq" > "${ROOT}/results/rsq_df.tsv"
 
 
 # perfomance evaluation
@@ -53,83 +53,87 @@ ORGANISM="Bnapus"
 MASKING="masked"
 PARTITIONING="graphpart_Bn"
 FOLDDIR=${ROOT}"/data/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"_fold_data"
-NEMO_WEIGHTDIR=${ROOT}"/model_weights/nemo/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}
-XPRESSO_WEIGHTDIR=${ROOT}"/model_weights/xpresso/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}
-CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$FOLDDIR" "$NEMO_WEIGHTDIR" & pid1=$!
-CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$FOLDDIR" "$XPRESSO_WEIGHTDIR" & pid2=$!
-wait $pid1 $pid2
-
-for MODEL in "nemo" "xpresso"
+for MODEL in xpresso # nemo # Basenji-5K PhytoExpr_CNN PhytoExpr_transformer
 do
-  ORGANISM="Bnapus"
-  MASKING="masked"
-  PARTITIONING="graphpart_Bn"
-  #                                  <model_name> <test_organism> <test_masking> <partitioning> <train_organism> <train_masking>
-  Rscript nemo/eval/get_rsq_matrix.R $MODEL $ORGANISM $MASKING $PARTITIONING $ORGANISM
+    for OUTPUT in "median" "max"
+    do
+        WEIGHTDIR=${ROOT}"/model_weights/"${MODEL}"/Bnapus/masked_graphpart_Bn"
+        CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$FOLDDIR" "$WEIGHTDIR" "$OUTPUT"
+    done
 done
 
-
-## performance comparisons w.r.t. masking and paritioning (only Bnapus)
-# partitioning parallelized
-for MASKING in "clear" "masked" "only_cds"
-do
-  GP_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_graphpart_fold_data"
-  RD_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_random_fold_data"
-  GP_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_graphpart"
-  RD_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_random"
-  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$GP_TESTDIR" "$GP_WEIGHTDIR" & pid1=$!
-  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$RD_TESTDIR" "$RD_WEIGHTDIR" & pid2=$!
-  wait $pid1 $pid2
-done
+# TODO MAKE RSQ file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#for MODEL in "nemo" "xpresso"
+#do
+#  ORGANISM="Bnapus"
+#  MASKING="masked"
+#  PARTITIONING="graphpart_Bn"
+#  #                                  <model_name> <test_organism> <test_masking> <partitioning> <train_organism> <train_masking>
+#  Rscript nemo/eval/get_rsq_matrix.R $MODEL $ORGANISM $MASKING $PARTITIONING $ORGANISM
+#done
 
 
-## cross-species comparisons
-# test organism parallelized
-for MODELORG in "Bnapus" "Athaliana"
-do
-  # Bnapus test set downsampled to size of Athaliana test sets
-  Bn_TESTDIR=${ROOT}"/data/Bnapus/masked_graphpartDS_fold_data"
-  At_TESTDIR=${ROOT}"/data/Athaliana/masked_graphpart_fold_data"
-  WEIGHTDIR=${ROOT}"/model_weights/nemo/"${MODELORG}"/masked_graphpart"
-  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$Bn_TESTDIR" "$WEIGHTDIR" & pid1=$!
-  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$At_TESTDIR" "$WEIGHTDIR" & pid2=$!
-  wait $pid1 $pid2
+### performance comparisons w.r.t. masking and paritioning (only Bnapus)
+## partitioning parallelized
+#for MASKING in "clear" "masked" "only_cds"
+#do
+#  GP_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_graphpart_fold_data"
+#  RD_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_random_fold_data"
+#  GP_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_graphpart"
+#  RD_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_random"
+#  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$GP_TESTDIR" "$GP_WEIGHTDIR" & pid1=$!
+#  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$RD_TESTDIR" "$RD_WEIGHTDIR" & pid2=$!
+#  wait $pid1 $pid2
+#done
 
-  for TESTORG in "Bnapus" "Athaliana"
-  do
-    if [[ $TESTORG == "Bnapus" && $MODELORG == "Bnapus" ]]; then
-      for MASKING in "clear" "masked" "only_cds"
-      do
-        for PARTITIONING in "graphpart" "random"
-        do
-          #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
-          Rscript nemo/eval/get_rsq_matrix.R "nemo" "Bnapus" $MASKING $PARTITIONING "Bnapus"
-        done
-      done
-    else
-      #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
-      Rscript nemo/eval/get_rsq_matrix.R "nemo" $TESTORG "masked" "graphpart" $MODELORG
-    fi
-  done
-done
 
-## classify based on expression, specificity and prediction
-for ORGANISM in "Bnapus" "Athaliana"
-do
-  EXPRESSION=${ROOT}"/data/"${ORGANISM}"/derived_data/expr_matrix.tsv"
-  MODEL="nemo"
-  PARTITIONING="graphpart"
-  MASKING="masked"
-  INITIAL=$(echo $ORGANISM | head -c 1)
-  PREDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/"${MODEL}${INITIAL}"_preds"
+### cross-species comparisons
+## test organism parallelized
+#for MODELORG in "Bnapus" "Athaliana"
+#do
+#  # Bnapus test set downsampled to size of Athaliana test sets
+#  Bn_TESTDIR=${ROOT}"/data/Bnapus/masked_graphpartDS_fold_data"
+#  At_TESTDIR=${ROOT}"/data/Athaliana/masked_graphpart_fold_data"
+#  WEIGHTDIR=${ROOT}"/model_weights/nemo/"${MODELORG}"/masked_graphpart"
+#  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$Bn_TESTDIR" "$WEIGHTDIR" & pid1=$!
+#  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$At_TESTDIR" "$WEIGHTDIR" & pid2=$!
+#  wait $pid1 $pid2
 
-  bash nemo/eval/cat_preds.sh $PREDDIR
-  EXPR_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/expression"
-  SPEC_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/specificity"
-  PRED_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/prediction"
-  Rscript nemo/eval/over_under_pred.R $PREDDIR $PRED_IDDIR
-  Rscript nemo/eval/get_expression_class_lists.R $PREDDIR $EXPR_IDDIR
-  Rscript nemo/eval/get_specificity_class_lists.R $EXPRESSION $SPEC_IDDIR
-done
+#  for TESTORG in "Bnapus" "Athaliana"
+#  do
+#    if [[ $TESTORG == "Bnapus" && $MODELORG == "Bnapus" ]]; then
+#      for MASKING in "clear" "masked" "only_cds"
+#      do
+#        for PARTITIONING in "graphpart" "random"
+#        do
+#          #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
+#          Rscript nemo/eval/get_rsq_matrix.R "nemo" "Bnapus" $MASKING $PARTITIONING "Bnapus"
+#        done
+#      done
+#    else
+#      #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
+#      Rscript nemo/eval/get_rsq_matrix.R "nemo" $TESTORG "masked" "graphpart" $MODELORG
+#    fi
+#  done
+#done
+
+### classify based on expression, specificity and prediction
+#for ORGANISM in "Bnapus" "Athaliana"
+#do
+#  EXPRESSION=${ROOT}"/data/"${ORGANISM}"/derived_data/expr_matrix.tsv"
+#  MODEL="nemo"
+#  PARTITIONING="graphpart"
+#  MASKING="masked"
+#  INITIAL=$(echo $ORGANISM | head -c 1)
+#  PREDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/"${MODEL}${INITIAL}"_preds"
+
+#  bash nemo/eval/cat_preds.sh $PREDDIR
+#  EXPR_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/expression"
+#  SPEC_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/specificity"
+#  PRED_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/prediction"
+#  Rscript nemo/eval/over_under_pred.R $PREDDIR $PRED_IDDIR
+#  Rscript nemo/eval/get_expression_class_lists.R $PREDDIR $EXPR_IDDIR
+#  Rscript nemo/eval/get_specificity_class_lists.R $EXPRESSION $SPEC_IDDIR
+#done
 
 mamba deactivate

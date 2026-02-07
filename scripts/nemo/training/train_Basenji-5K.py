@@ -115,7 +115,7 @@ def decay(epoch):
       return 1e-5
 
 
-callbacks = [tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(outdir, f"Basenji-5K_{tpm_type}_n_{N}.h5"),
+callbacks = [tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(outdir, f"Basenji-5K_t_0_v_1_n_{N}_{tpm_type}.h5"),
                                         monitor='val_loss',
                                         verbose=0,
                                         mode='auto' ,
@@ -127,7 +127,7 @@ callbacks = [tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(outdir, f"
 logdir = os.path.join(outdir, 'logs')
 logdir = logdir.replace("model_weights", "results")
 os.makedirs(logdir, exist_ok=True)
-logpath = os.path.join(logdir, f'trainlog_{tpm_type}_n_{N}.csv')
+logpath = os.path.join(logdir, f'trainlog_n_{N}_{tpm_type}.csv')
 # log metrics/losses at each epoch
 csvlog_cb = tf.keras.callbacks.CSVLogger(logpath, append=True, separator='\t')
 callbacks.append(csvlog_cb)

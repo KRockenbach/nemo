@@ -1,0 +1,5 @@
+outside_P	4000
+outside_T	4000
+inside_P	1000
+inside_T	1000
+batch_size	65

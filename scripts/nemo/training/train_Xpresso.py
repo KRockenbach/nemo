@@ -150,7 +150,7 @@ logdir = logdir.replace("model_weights", "results")
 os.makedirs(logdir, exist_ok=True)
 
 # val_loss needed for model checkpoints
-model_outfile = f"{model_descriptor}_n_{N}_{tpm_type}.h5"
+model_outfile = f"{model_descriptor}_t_0_v_1_n_{N}_{tpm_type}.h5"
 check_cb = ModelCheckpoint(os.path.join(outdir, model_outfile),
                            monitor='val_loss', verbose=1,
                            save_best_only=True, mode='min')

@@ -1,0 +1,4 @@
+use_promoter	True
+use_terminator	False
+use_halflife	False
+n_outputs	1
