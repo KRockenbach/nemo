@@ -76,6 +76,7 @@ do
     TEST=0
     VALID=1
     #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Xpresso $N $TPM_TYPE
+    #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Xpresso_no_halflife $N $TPM_TYPE
     #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_Basenji-5K $N $TPM_TYPE
     #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_CNN $N $TPM_TYPE
     #CUDA_VISIBLE_DEVICES=$DEVICE python -m nemo.training.train_PhytoExpr_transformer $N $TPM_TYPE

@@ -30,273 +30,158 @@
 source("./plot_utils.R")
 
 
-# processing steps:
-########################
-# importance:
-# 1) importance for each gene is calculated as the sum of absolute attributions across bases at each position
-# 2) global mean and sd across all genes is calculated at each position (taking masked segments into account)
-# 3) mean across each group of genes is calculated (taking masked segments into account)
-# 4) savitzky-golay filter is applied to global mean, global sd, and group means
-# 5) global mean is mean-normalized (mean across both sequences is subtracted from each position)
-# 6) group means are mean-normalized (mean across both sequences is subtracted from each position)
-# 7) normalized global mean is subtracted from normalized group means
-# 8) difference is divided by global standard deviation
-# 9) color values are scaled globally for eahc sequence 
-    #(min-max scaling to the range [0,1], 
-    #where the 0 represents the minumum across groups and positions 
-    #and 1 represents the maximum across groups and positions)
-
-
-# DAP-seq:
-# Min-max scaling to range [0,1] within each group (by row) across both sequences! 
-
-
 
 organisms <- c("Bnapus", "Athaliana")
 
 families <- c("MYBrelated", "Homeobox", "C2C2dof", "WRKY",
               "TCP", "bZIP", "MYB", "MADS", "bHLH", "Trihelix",
               "NAC", "G2like", "HSF", "AP2EREBP", "C2C2gata")
-families_full <- c("MYB-related", "Homeobox", "C2C2-Dof", "WRKY",
-                   "TCP", "bZIP", "MYB", "MADS", "bHLH", "Trihelix",
-                   "NAC", "G2-like", "HSF", "AP2/EREBP", "C2C2-GATA")
 
 
 fig_lab_cex=1.5
 
 
-plot_heatmap <- function(pdf, tdf, filter=FALSE, palette="custom",
-                         descriptor="", norm_type="positive", legend_labs=c("Low", "High"), 
-                         label=expression(bold("C")), byrow=T, organism){ #promoter DF, terminator Df
-  par(mar=c(2.5,0,1.5,0), tck=-0.03, mgp=c(1.5,0.4,0))
-  plot(x=c(-460:460), y=c(0:-920), type="n", 
-       axes=F, xlab="", ylab="", ylim=c(-1500,0))
-  fig_label(label, cex=fig_lab_cex)
-  # joint normalization and smoothing of promoter and terminator data
-  for (f in families){
-    if(filter){
-      pdf[,f] <- sgolayfilt(pdf[,f], p = 1, n = 45) #75)
-      tdf[,f] <- sgolayfilt(tdf[,f], p = 1, n = 45) #75) 
-    }
-    if(norm_type=="center"){
-      norm.cat <- min_max.zero_center.scale(c(pdf[,f], tdf[,f]))
-      pdf[,f] <- norm.cat[1:1001]
-      tdf[,f] <- norm.cat[1002:2002] 
-    } else if(norm_type=="positive"){
-      norm.cat <- min_max.positive.scale(c(pdf[,f], tdf[,f]))
-      pdf[,f] <- norm.cat[1:1001]
-      tdf[,f] <- norm.cat[1002:2002]
-    }
-  }  
-  if (norm_type=="positive_global"){
-    norm.cat <- min_max.positive.scale(as.matrix(rbind(pdf[,families], tdf[,families])))
-    pdf[,families] <- norm.cat[1:1001,]
-    tdf[,families] <- norm.cat[1002:2002,]
-  } else if(norm_type=="center_global"){
-    norm.cat <- min_max.zero_center.scale(as.matrix(rbind(pdf[,families], tdf[,families])))
-    pdf[,families] <- norm.cat[1:1001,]
-    tdf[,families] <- norm.cat[1002:2002,] 
-  }
-  for (f in 1:length(families)){
-    y1 <- (-1)*(f-1)*100
-    y2 <- (-1)*(f)*100
-    text(x=300, y=(y1+y2)/2, labels=families_full[f], adj=1, cex=0.75)
-  }
+plot_scatter <- function(organism){
+
   
-  if (organism=="Athaliana"){
-    text(x=300, y=120, labels=expression(italic("A. thaliana")), adj=1, cex=1, col="grey40")
-  } else {
-    text(x=300, y=120, labels=expression(italic("B. napus")), adj=1, cex=1, col="grey40")
-  }
+  initial <- strsplit(organism, split="")[[1]][1]
+  path <- paste0("../results/nemo/",organism,"/masked_graphpart/nemo",initial,"_preds/concat_preds.tsv")
+  df <- read.table(path, header=T, sep="\t")
   
-  for (seq in c("Promoter", "Terminator")){
-    if (seq == "Promoter"){
-      df <- pdf
-      ref_point <- "TSS"
-    } else {
-      df <- tdf
-      ref_point <- "TTS"
-    }
-    if (seq == "Promoter"){
-      par(mar=c(2.5,0.1,1.5,0.3), cex.axis=0.6, xpd=T)
-    } else {
-      par(mar=c(2.5,0.3,1.5,0.1), cex.axis=0.6, xpd=T)
-    }
-    plot(x=c(-460:460), y=c(0:-920), type="n", 
-         axes=F, xlab="", ylab="", ylim=c(-1500,0), cex.lab=lab_cex)
-    if (byrow){ # scale color values by row (column in df; between positions)
-      for (f in 1:15){
-        fam <- families[f]
-        y1 <- (-1)*(f-1)*100
-        y2 <- (-1)*f*100
-        cols <- get_colors(df[,fam], palette=palette)
-        for (idx in 1:1001){
-          x1 <- (-500) + (idx-1)
-          x2 <- (-500) + idx
-          polygon(x=c(x1,x1,x2,x2), y=c(y1,y2,y2,y1), border=NA, col=cols[idx]) 
-        }
-        polygon(x=c(-500,-500,500,500), y=c(y1,y2,y2,y1), lwd=1)
-      } 
-    } else { # scale color values globally
-      min <- min(df[,families])
-      max <- max(df[,families])
-      for (idx in 1:1001){
-        x1 <- (-500) + (idx-1)
-        x2 <- (-500) + idx
-        cols <- get_colors(as.matrix(df[idx,families]), palette=palette)
-        for (f in 1:15){
-          y1 <- (-1)*(f-1)*100
-          y2 <- (-1)*f*100
-          polygon(x=c(x1,x1,x2,x2), y=c(y1,y2,y2,y1), border=NA, col=cols[f]) 
-        }
-      }
-      for (f in 1:15){
-        y1 <- (-1)*(f-1)*100
-        y2 <- (-1)*f*100
-        polygon(x=c(-500,-500,500,500), y=c(y1,y2,y2,y1), lwd=1)
-      }
-    }
-    lines(x=c(0,0), y=c(-1500,0), col=transparent("grey20",0.6), lwd=2)
-    axis(side=1, at=seq(-500,500,50), las=2, cex.axis=ax_cex)
-    title(xlab=paste0("Position Relative to ", ref_point), cex.lab=lab_cex)
-    title(main=seq, line=0.02, cex.main=main_cex)
-  }
-  par(mar=c(1.5,0.5,1.5,0.5))
-  plot(x=c(-60:60), y=c(0:120), type="n", 
-       axes=F, xlab="", ylab="", ylim=c(0,120), cex.lab=lab_cex)
-  if (palette=="custom"){
-    cols <- get_colors(seq(-1,1,2/999), palette="custom") 
-  } else {
-    cols <- get_colors(seq(0,1,1/999), palette=palette)
-  }
-  #legend width
-  lw <- 15
-  #legend height
-  lh <- 0.05
+  x <- df$Actual
+  y <- df$Predicted
+  
+  err <- (y - x)
+  abs_err <- abs(err)
+  cutoff <- median(abs_err)
+  
+  # Gaussian KDE
+  df$Density <- get_density(df$Actual, df$Predicted, n = 100, h = c(1, 1))
+  # scale density to range (0,1)
+  df$Density <- df$Density/max(df$Density)
+  # scale to integer range [1,1000]
+  df$Density <- 1 + round(df$Density*999, 0)
+  # sort df by density, so that densest points get drawn last
+  df <- df[order(df$Density),]
+  
+  # 2A
+  grey_scale <- c()
   for (i in 1:1000){
-    polygon(x=c(-1,-1,1,1)*lw, y=c(25+((i-1)*lh), 25+(i*lh), 25+(i*lh), 25+((i-1)*lh)), col=cols[i], border=NA)
+    grey_scale[i] <- grey(0.8/((i+199)/200))
   }
-  lines(x=c(-lw-1,lw+1), y=c(25,25))
-  lines(x=c(-lw-1,lw+1), y=c(75,75))
-  text(x=c(0,0), y=c(20,80), labels=legend_labs, cex=0.6, adj=0.5, col="grey40")
-  par(xpd=T)
-  text(x=0, y=110, labels=descriptor, cex=0.6)
+  par(mar=c(3,3,0,1), mgp=c(1.8,0.5,0), tck=-0.03)
+  plot(df$Actual, df$Predicted, col=grey_scale[df$Density], pch=19,
+       xlab = expression("Observed Expression [log"[10]*"(TPM + 0.1)]"),
+       ylab = expression("Predicted Expression [log"[10]*"(TPM + 0.1)]  "),
+       cex.lab=lab_cex, cex.axis=ax_cex,
+       ylim=c(-1,4), xlim=c(-1,4))
+  
+  if (organism == "Athaliana"){
+    legend("topleft", pch=NA, legend=expression(italic("A. thaliana")), text.col="grey40", bty="n")
+  } else {
+    legend("topleft", pch=NA, legend=expression(italic("B. napus")), text.col="grey40", bty="n")
+  }
+  
+  Q <- quantile(x, probs=c(0.25,0.75))
+  q1 <- Q[1]
+  q3 <- Q[2]
+  buffer <- median(abs(err))
+  polygon(x=c(q1, q1, q3, q3),
+          y=c(q1-buffer, q1+buffer, q3+buffer, q3-buffer),
+          col=transparent("purple",0.65), border="purple")
+  polygon(x=c(min(x)-0.05, min(x)-0.05, q1, q1),
+          y=c(min(x)-0.05-buffer, min(x)-0.05+buffer, q1+buffer, q1-buffer),
+          col=transparent("blue",0.65), border="blue")
+  polygon(x=c(q3, q3, max(x)+0.05, max(x)+0.05),
+          y=c(q3-buffer, q3+buffer, max(x)+0.05+buffer, max(x)+0.05-buffer),
+          col=transparent("red",0.65), border="red")
+  
+  
+  
+  dx <- density(df$Actual, cut=F)
+  par(mar=c(0,3,1,1), xpd=F)
+
+  boxplot(df$Actual, type="n", axes=F, ylab="", xlab="", horizontal=T, ylim=c(-1,4))
+  polygon(x=c(min(df$Actual)-0.05, min(df$Actual)-0.05, q1, q1), y=c(0,2,2,0), col=transparent("blue", 0.8), border=NA)
+  polygon(x=c(q1, q1, q3, q3), y=c(0,2,2,0), col=transparent("purple", 0.8), border=NA)
+  polygon(x=c(q3, q3, max(df$Actual)+0.05, max(df$Actual)+0.05), y=c(0,2,2,0), col=transparent("red", 0.8), border=NA)
+  boxplot(df$Actual, axes=F, ylab="", xlab="", add=T, horizontal=T, col=NA)
+  if (organism == "Bnapus"){
+    fig_label(expression(bold("A")), cex=fig_lab_cex) 
+  } else {
+    fig_label(expression(bold("C")), cex=fig_lab_cex)
+  }
 }
 
+plot_importance <-function(organism){
+  initial <- strsplit(organism, split="")[[1]][1]
+  p_path <- paste0("../results/nemo/",organism,"/masked_graphpart/attribs/promoter_expression_importance.tsv")
+  t_path <- paste0("../results/nemo/",organism,"/masked_graphpart/attribs/terminator_expression_importance.tsv")
+  pdf <- read.table(p_path, header=T, sep="\t")
+  tdf <- read.table(t_path, header=T, sep="\t")
+  for(c in c("high_expr_ids", "low_expr_ids", "medium_expr_ids")){
+    pdf[,c] <- sgolayfilt(pdf[,c], p = 3, n = 111)
+    tdf[,c] <- sgolayfilt(tdf[,c], p = 3, n = 111)
+  }
+  par(mar=c(4,4.2,2,0), xpd=F)
+  plot(y=rep(0,6201),
+       x=c(-5000:1200), type="n",
+       xlab="", ylab="Importance", 
+       axes=F, main="Promoter", cex.lab=lab_cex, cex.main=main_cex,
+       ylim=c(0, max(c(pdf$high_expr_ids, pdf$low_expr_ids, pdf$medium_expr_ids,
+                       tdf$high_expr_ids, tdf$low_expr_ids, tdf$medium_expr_ids))))
+  if (organism == "Bnapus"){
+    legend("topleft", pch=NA, legend=expression(italic("B. napus")), text.col="grey40", bty="n")
+    fig_label(expression(bold("B")), cex=fig_lab_cex) 
+  } else {
+    legend("topleft", pch=NA, legend=expression(italic("A. thaliana")), text.col="grey40", bty="n")
+    fig_label(expression(bold("D")), cex=fig_lab_cex)
+  }
+  axis(side=1, cex.axis=ax_cex, las=2)
+  title(xlab="Position Relative to TSS", line=2.5)
+  axis(side=2, cex.axis=ax_cex)
+  lines(x=pdf$position, pdf$high_expr_ids, col="red", lwd=2)
+  lines(x=pdf$position, pdf$medium_expr_ids, col="purple", lwd=2)
+  lines(x=pdf$position, pdf$low_expr_ids, col="blue", lwd=2)
+  lines(x=c(0,0), y=c(0,0.015), lwd=2, lty=2, col=transparent("grey30",0.5))
+  
+  par(mar=c(4,2,2,2.2))
+  plot(y=rep(0,6201),
+       x=c(-1200:5000), type="n",
+       xlab="", ylab="", 
+       cex.lab=lab_cex, axes=F, main="Terminator", cex.main=main_cex,
+       ylim=c(0,max(c(pdf$high_expr_ids, pdf$low_expr_ids, pdf$medium_expr_ids,
+                      tdf$high_expr_ids, tdf$low_expr_ids, tdf$medium_expr_ids))))
+  axis(side=1, cex.axis=ax_cex, las=2)
+  title(xlab="Position Relative to TTS", line=2.5)
+  lines(x=tdf$position, tdf$high_expr_ids, col="red", lwd=2)
+  lines(x=tdf$position, tdf$medium_expr_ids, col="purple", lwd=2)
+  lines(x=tdf$position, tdf$low_expr_ids, col="blue", lwd=2)
+  lines(x=c(0,0), y=c(0,0.015), lwd=2, lty=2, col=transparent("grey30",0.5))
+} 
 
 
-png("fig_4.png", height=20, width=17, res=1200, units="cm")
-par(xpd=T)
-layout(matrix(c(1,2,3,4,
-                5,6,7,8,
-                9,10,11,12,
-                13,14,15,16,
-                17,18,19,20), ncol=4, byrow=T),
-       heights=rep(1,5),
-       widths=c(1.25,3.5,3.5,0.75))
 
-
-seqs <- c("promoter", "terminator")
-
-
-lab_cex=0.75
-ax_cex=0.6
-main_cex=0.85
-
-pdf <- data.table::transpose(read.table("../data/plot_data/DAPseq/DAPSeq.TF.promoter.tsv", header=F), make.names = 1)
-pdf <- pdf[,families]
-position <- as.numeric(rownames(pdf))
-pdf <- cbind(position, pdf)
-tdf <- data.table::transpose(read.table("../data/plot_data/DAPseq/DAPSeq.TF.terminator.tsv", header=F), make.names = 1)
-tdf <- tdf[,families]
-tdf <- cbind(position, tdf)
-
-plot_heatmap(pdf,tdf, palette="inferno", descriptor="DAP-Seq\nSignal\n(Scaled by Row)", 
-             label=expression(bold("A")), norm_type="positive", organism="Athaliana")
+png("fig_3.png", height=14, width=17, res=1200, units="cm")
+layout(matrix(c(2,3,4,
+                1,3,4,
+                6,7,8,
+                5,7,8), ncol=3, byrow=T),
+       heights=c(0.3,1,0.3,1),
+       widths=c(1,1,1))
 
 for (o in 1:2){
     organism <- organisms[o]
-    
-    
-    pdf <- read.table(paste0("../results/nemo/",organism,
-                             "/masked_graphpart/attribs/promoter_TF_importance.tsv"),
-                      header=T)
-    tdf <- read.table(paste0("../results/nemo/",organism,
-                             "/masked_graphpart/attribs/terminator_TF_importance.tsv"),
-                      header=T)
-    tdf$position <- tdf$position + 1 # shift position, because TTS is part of upstream sequence
-    # trim to +- 500 bp
-    pdf <- pdf[501:1501,]
-    tdf <- tdf[501:1501,]
-    pdf <- pdf[,c("position","mean", "sd", families)]
-    tdf <- tdf[,c("position","mean", "sd", families)]
-    
-    
-    # savitzky-golay filtering
-    for (c in 2:ncol(pdf)){
-      R=1
-      N=45 #75
-      P=1
-      pdf[,c] <- sgolayfilt(pdf[,c], p = P, n = N)
-      tdf[,c] <- sgolayfilt(tdf[,c], p = P, n = N)
-    }
-    # mean normalize
-    for (f in families){
-      concat <- c(pdf[,f], tdf[,f])
-      concat <- mean_norm(concat) #!
-      pdf[,f] <- concat[1:length(pdf[,f])]
-      tdf[,f] <- concat[(length(pdf[,f])+1):length(concat)]
+    seqs <- c("promoter", "terminator")
+  
 
-    }
-    # mean normalize (across sequence) mean (across samples)
-    concat_mean <- c(pdf$mean, tdf$mean)
-    concat_mean <- mean_norm(concat_mean) #!
-    pdf$mean <- concat_mean[1:length(pdf$mean)]
-    tdf$mean <- concat_mean[(length(pdf$mean)+1):length(concat_mean)]
-
+    lab_cex=1
+    ax_cex=0.8
+    main_cex=0.9
     
-    # standardize
-    for (f in families){
-      pdf[,f] <- (pdf[,f] - pdf$mean)
-      tdf[,f] <- (tdf[,f] - tdf$mean)
-    }
-
-    for (f in families){
-      pdf[,f] <- (pdf[,f]/pdf$sd)
-      tdf[,f] <- (tdf[,f]/tdf$sd)
-    }
-
-    if (organism=="Athaliana"){
-      label=expression(bold("C"))
-    } else {
-      label=expression(bold("B"))
-    }
-
-    plot_heatmap(pdf,tdf, filter=FALSE, palette="inferno", norm_type="positive_global",
-                 descriptor="Normalized\nImportance\n(Scaled Globally)",
-                 byrow=F, label=label, organism=organism)
+    plot_scatter(organism)
+    plot_importance(organism)
+    
 }
-
-
-
-for (organism in c("Bnapus","Athaliana")){   
-    pdf <- read.table(paste0("../data/plot_data/", organism, "_promoter_TF_inserted.tsv"), header=T)
-    tdf <- read.table(paste0("../data/plot_data/", organism, "_terminator_TF_inserted.tsv"), header=T)
-    tdf$x <- tdf$x + 1 # shift position, because TTS is part of upstream sequence
-    # trim to +- 500 bp
-    pdf <- pdf[pdf$x %in% c(-500:500),]
-    tdf <- tdf[tdf$x %in% c(-500:500),]
-    
-    if (organism=="Athaliana"){
-      label=expression(bold("E"))
-    } else {
-      label=expression(bold("D"))
-    }
-    
-    plot_heatmap(pdf,tdf, filter=TRUE, palette="custom", 
-                 descriptor="Change in\nExpression\n(Scaled Globally)", 
-                 legend_labs=c("Negative","Positive"), label=label, norm_type="center_global", organism=organism)
-
-}
-
 dev.off()
+

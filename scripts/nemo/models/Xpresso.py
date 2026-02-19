@@ -32,8 +32,8 @@ title: Xpresso.py
 description: convenient build function for the Xpresso model
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2025-01-20
-version: 1.0.0
+date: 2026-02-07
+version: 1.0.1
 usage:
       (1) run a given script (e.g. script.py) as: python -m script
       (2) within script, import functions using: from ..models.Xpresso import build_nemo
@@ -75,3 +75,33 @@ def build_xpresso():
     D = Dense(1)(D) # output
 
     return Model(inputs = [promoter, halflife], outputs = D)
+
+
+
+def build_xpresso_no_halflife():
+
+    ini = "glorot_normal"
+
+    promoter = Input(shape=(10500, 4), name='promoter')
+
+    P = Conv1D(128, 6, padding="same", kernel_initializer=ini)(promoter)
+    P = LeakyReLU(alpha=0.1)(P)
+    P = MaxPooling1D(30, padding="same")(P)
+
+    P = Conv1D(32, 9, padding="same", kernel_initializer=ini)(P)
+    P = LeakyReLU(alpha=0.1)(P)
+    P = MaxPooling1D(10, padding="same")(P)
+
+    P = Flatten()(P)
+
+    D = Dense(64, kernel_initializer=ini)(P)
+    D = LeakyReLU(alpha=0.1)(D)
+    D = Dropout(0.00099)(D)
+
+    D = Dense(2, kernel_initializer=ini)(D)
+    D = LeakyReLU(alpha=0.1)(D)
+    D = Dropout(0.01546)(D)
+
+    D = Dense(1)(D) # output
+
+    return Model(inputs = [promoter], outputs = D)

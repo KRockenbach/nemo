@@ -668,10 +668,11 @@ def build_nemo_terminator(terminator, momentum=0.81669, pooling_fixed=False):
 
 
 def build_nemo():
+    ini="glorot_normal"
     promoter = Input(shape=(6200, 4), name="promoter")
     terminator = Input(shape=(6200, 4), name="terminator")
     P = build_nemo_promoter(promoter)
-    T = build_nemo_temrinator(terminator)
+    T = build_nemo_terminator(terminator)
     D = Concatenate(axis=1)([P,T])
     D = Dense(750, kernel_initializer=ini)(D)
     D = BatchNormalization(momentum=0.81669)(D)

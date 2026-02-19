@@ -44,33 +44,33 @@ mamba activate nemo
 
 ROOT=".."
 
-#echo -e "model\ttest_organism\tmasking\tpartitioning\ttrain_organism\ttest_fold\tvalid_fold\tN\trsq" > "${ROOT}/results/rsq_df.tsv"
+echo -e "model\ttest_organism\tmasking\tpartitioning\ttrain_organism\ttest_fold\tvalid_fold\tN\ttpm_type\trsq" > "${ROOT}/results/rsq_df.tsv"
 
 
 # perfomance evaluation
 # models parallelized
-ORGANISM="Bnapus"
-MASKING="masked"
-PARTITIONING="graphpart_Bn"
-FOLDDIR=${ROOT}"/data/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"_fold_data"
-for MODEL in xpresso # nemo # Basenji-5K PhytoExpr_CNN PhytoExpr_transformer
-do
-    for OUTPUT in "median" "max"
-    do
-        WEIGHTDIR=${ROOT}"/model_weights/"${MODEL}"/Bnapus/masked_graphpart_Bn"
-        CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$FOLDDIR" "$WEIGHTDIR" "$OUTPUT"
-    done
-done
-
-# TODO MAKE RSQ file !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#for MODEL in "nemo" "xpresso"
+#ORGANISM="Bnapus"
+#MASKING="masked"
+#PARTITIONING="graphpart_Bn"
+#FOLDDIR=${ROOT}"/data/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"_fold_data"
+#for MODEL in nemo # xpresso xpresso_no_halflife Basenji-5K PhytoExpr_CNN PhytoExpr_transformer
 #do
-#  ORGANISM="Bnapus"
-#  MASKING="masked"
-#  PARTITIONING="graphpart_Bn"
-#  #                                  <model_name> <test_organism> <test_masking> <partitioning> <train_organism> <train_masking>
-#  Rscript nemo/eval/get_rsq_matrix.R $MODEL $ORGANISM $MASKING $PARTITIONING $ORGANISM
+#    for OUTPUT in "median" "max"
+#    do
+#        WEIGHTDIR=${ROOT}"/model_weights/"${MODEL}"/Bnapus/masked_graphpart_Bn"
+#        CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$FOLDDIR" "$WEIGHTDIR" "$OUTPUT"
+#    done
 #done
+
+
+for MODEL in "nemo" "xpresso" "xpresso_no_halflife" "Basenji-5K" "PhytoExpr_CNN" "PhytoExpr_transformer"
+do
+  ORGANISM="Bnapus"
+  MASKING="masked"
+  PARTITIONING="graphpart_Bn"
+  #                                  <model_name> <test_organism> <test_masking> <partitioning> <train_organism> <train_masking>
+  Rscript nemo/eval/get_rsq_matrix.R $MODEL $ORGANISM $MASKING $PARTITIONING $ORGANISM
+done
 
 
 ### performance comparisons w.r.t. masking and paritioning (only Bnapus)
@@ -89,9 +89,9 @@ done
 
 ### cross-species comparisons
 ## test organism parallelized
-#for MODELORG in "Bnapus" "Athaliana"
-#do
-#  # Bnapus test set downsampled to size of Athaliana test sets
+for MODELORG in "Bnapus" "Athaliana"
+do
+  # Bnapus test set downsampled to size of Athaliana test sets
 #  Bn_TESTDIR=${ROOT}"/data/Bnapus/masked_graphpartDS_fold_data"
 #  At_TESTDIR=${ROOT}"/data/Athaliana/masked_graphpart_fold_data"
 #  WEIGHTDIR=${ROOT}"/model_weights/nemo/"${MODELORG}"/masked_graphpart"
@@ -99,23 +99,23 @@ done
 #  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$At_TESTDIR" "$WEIGHTDIR" & pid2=$!
 #  wait $pid1 $pid2
 
-#  for TESTORG in "Bnapus" "Athaliana"
-#  do
-#    if [[ $TESTORG == "Bnapus" && $MODELORG == "Bnapus" ]]; then
-#      for MASKING in "clear" "masked" "only_cds"
-#      do
-#        for PARTITIONING in "graphpart" "random"
-#        do
-#          #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
-#          Rscript nemo/eval/get_rsq_matrix.R "nemo" "Bnapus" $MASKING $PARTITIONING "Bnapus"
-#        done
-#      done
-#    else
-#      #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
-#      Rscript nemo/eval/get_rsq_matrix.R "nemo" $TESTORG "masked" "graphpart" $MODELORG
-#    fi
-#  done
-#done
+  for TESTORG in "Bnapus" "Athaliana"
+  do
+    if [[ $TESTORG == "Bnapus" && $MODELORG == "Bnapus" ]]; then
+      for MASKING in "clear" "masked" "only_cds"
+      do
+        for PARTITIONING in "graphpart" "random"
+        do
+          #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
+          Rscript nemo/eval/get_rsq_matrix.R "nemo" "Bnapus" $MASKING $PARTITIONING "Bnapus"
+        done
+      done
+    else
+      #                                  <model_name> <test_organism> <masking> <partitioning> <train_organism>
+      Rscript nemo/eval/get_rsq_matrix.R "nemo" $TESTORG "masked" "graphpart" $MODELORG
+    fi
+  done
+done
 
 ### classify based on expression, specificity and prediction
 #for ORGANISM in "Bnapus" "Athaliana"

@@ -95,22 +95,19 @@ mamba activate nemo
 #wget http://jaspar.elixir.no/temp/20250811112405_JASPAR2024_combined_matrices_305443_pfm.txt -O ../data/motifs/HSF_pfm.txt
 
 
-for FAMILY in C2C2gata G2like NAC Trihelix bHLH MADS MYB bZIP TCP WRKY C2C2dof Homeobox MYBrelated AP2EREBP HSF
-do
-  mkdir -p "../data/motifs/${FAMILY}"
-  echo "../data/motifs/${FAMILY}" | awk -f nemo/mutation/separate_motifs.awk - "../data/motifs/${FAMILY}_pfm.txt"
-done
+#for FAMILY in C2C2gata G2like NAC Trihelix bHLH MADS MYB bZIP TCP WRKY C2C2dof Homeobox MYBrelated AP2EREBP HSF
+#do
+#  mkdir -p "../data/motifs/${FAMILY}"
+#  echo "../data/motifs/${FAMILY}" | awk -f nemo/mutation/separate_motifs.awk - "../data/motifs/${FAMILY}_pfm.txt"
+#done
 
 for FAMILY in C2C2gata G2like NAC Trihelix bHLH MADS MYB bZIP TCP WRKY C2C2dof Homeobox MYBrelated AP2EREBP HSF
 do
-  for PWM_PATH in ../data/motifs/${FAMILY}/*
-  do
-    At_ID_PATH=$(ls ../data/Athaliana/parent_data/TF_ids/* | grep "${FAMILY}\.")
-    Bn_ID_PATH=$(ls ../data/Bnapus/parent_data/TF_ids/* | grep "${FAMILY}\.")
-    CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -p $PWM_PATH -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" & pid1=$!
-    CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -p $PWM_PATH -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" & pid2=$!
-    wait $pid1 $pid2
-  done
+  At_ID_PATH=$(ls ../data/Athaliana/parent_data/TF_ids/* | grep "${FAMILY}\.")
+  Bn_ID_PATH=$(ls ../data/Bnapus/parent_data/TF_ids/* | grep "${FAMILY}\.")
+  CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" & pid1=$!
+  CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" & pid2=$!
+  wait $pid1 $pid2
 done
 
 

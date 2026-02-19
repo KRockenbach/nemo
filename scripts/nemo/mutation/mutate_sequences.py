@@ -33,9 +33,9 @@ title: mutate_sequences.py
 description: creates pwm from pfm and motifs from pwm, inserts motif into sequence and makes predictions on mutated sequences
 author: Kevin Rockenbach
 email: kevin.rockenbach@ag.uni-giessen.de
-date: 2026-01-07
-version: 1.0.1
-usage: python -m nemo.mutation.mutate_sequences [-p|--pwm_path <path to pwm of TF>] [-o|--organism <species>] [-a|--associated_IDs <path to file containing gene IDs associated with TF family>] [-f|TF_family <TF family name>] [-m|--modelname <name of model>]
+date: 2026-02-09
+version: 2.0.0
+usage: python -m nemo.mutation.mutate_sequences [-o|--organism <species>] [-a|--associated_IDs <path to file containing gene IDs associated with TF family>] [-f|TF_family <TF family name>] [-m|--modelname <name of model>]
 notes: run within nemo environment
 =========================================================================================================
 '''
@@ -43,237 +43,257 @@ notes: run within nemo environment
 import sys, os
 import numpy as np
 import pandas as pd
-import ..utils.model_utils as utils #one_hot, build_nemo, dict_from_tsv
+from ..utils import model_utils as utils #one_hot, build_nemo, dict_from_tsv
 from pickle import load
 from tqdm import tqdm
 from random import sample, choice, shuffle
 from argparse import ArgumentParser
+import subprocess
 
 
-def insert_motifs(pwm_path, organism, group_path_list, n_insert, results):
-
-    prom_path = os.path.join(results, "attribs/promoter_seqs_GradientExplainer.full.npz")
-    term_path = os.path.join(results, "attribs/terminator_seqs_GradientExplainer.full.npz")
-    name_path = os.path.join(results, "attribs/gene_names.lst")
-
-    def subset_array(prom_array, term_array, name_path, group_path_list, TSS, TTS):
-
-        def sub_iteration(prom, term, names, group_idx):
-            # get ingroup subset
-            group_prom = np.take(prom, group_idx, 0)
-            group_term = np.take(term, group_idx, 0)
-            group_names = [names[idx] for idx in group_idx]
-            return group_names, group_prom, group_term
-
-        names = pd.read_csv(name_path, delimiter=None, header=None).iloc[:,0].tolist()
-        prom = prom_array
-        term = term_array
-        group_idx = []
-
-        for i, group_path in enumerate(group_path_list):
-            group = pd.read_csv(group_path, delimiter=None, header=None).iloc[:,0].tolist()
-            group = [x.split(".")[0] for x in group]
-            group_idx = [names.index(gene) for gene in names if gene not in group] # group gets excluded!
-            names, prom, term = sub_iteration(prom, term, names, group_idx)
-
-        prom_pick = np.asarray(prom[:,(TSS-1000):(TSS+1000),:].sum(axis=2).sum(axis=1) >= 20).nonzero()[0].tolist()
-        term_pick = np.asarray(term[:,(TTS-1000):(TTS+1000),:].sum(axis=2).sum(axis=1) >= 20).nonzero()[0].tolist()
-        pick = [item for item in prom_pick if item in term_pick] # only pick from genes that have at least 20 unmasked bases around TSS and TTS
-        keep = sample(pick, 1000) # doing it for all genes at once leads to OOM
-        names = [names[i] for i in keep]
-        prom = prom[keep,:,:]
-        term = term[keep,:,:]
-        return names, prom, term
+n_outputs = 1
+out_idx = 2 #median
 
 
-    def generate_motif_list(pwm_path: str=pwm_path, n_motifs: int=n_insert) -> list:
+def inverse_transform(z, scaler, n_outputs = n_outputs, out_idx = out_idx):
+        z=z.reshape(-1,n_outputs)
+        return (z*scaler.scale_[out_idx])+scaler.mean_[out_idx]
+
+
+def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
+    print(f"mutating")
+
+
+    def generate_motifs(ppm: pd.DataFrame=ppm) -> list:
         motif_list = []
         scrambled_list = []
         random_list = []
-        pwm = pd.read_csv(pwm_path, delimiter="\t", header=None, comment="#")
-        ppm = pwm
-        for col in range(len(pwm.columns)):
-            ppm.iloc[:,col] = (ppm.iloc[:,col]) / (ppm.iloc[:,col].sum())
-        for i in range(n_motifs):
-            motif = ""
-            random_motif = ""
-            for j in range(len(ppm.columns)):
-                choices = ["A", "C", "G", "T"]
-                weights = ppm.iloc[:,j].to_list()
-                motif += np.random.choice(choices, p=weights)
-                random_motif += np.random.choice(choices, p=[0.25, 0.25, 0.25, 0.25])
-            motif_list.append(motif)
-            nucleotides = list(motif)
-            scrambled_list.append(''.join(shuffle(nucleotides)))
-            random_list.append(random_motif)
-        return motif_list, scrambled_list, random_list
+
+        motif = ""
+        random_motif = ""
+        for j in range(len(ppm.columns)):
+            choices = ["A", "C", "G", "T"]
+            weights = ppm.iloc[:,j].to_list()
+            motif += np.random.choice(choices, p=weights)
+            random_motif += np.random.choice(choices, p=[0.25, 0.25, 0.25, 0.25])
+        nucleotides = list(motif)
+        shuffle(nucleotides)
+        scrambled_motif=''.join(nucleotides)
+        return motif, scrambled_motif, random_motif
+
+    def get_sample_idx(array, position) -> np.ndarray:
+        sample_bool = np.nonzero(np.sum(array[:,position,:], axis=1))[0] # tuple
+        choices = [x for x in range(sample_bool.shape[0]) if sample_bool[x]]
+        sample_idx = choice(choices)
+        return sample_idx
+
+    def mutate_seq(sample, position, ref_point, motifs, seq_type) -> list:
+        abs_position = ref_point + position
+        split_list = np.split(sample, [abs_position], axis=0) # axis 0 is length axis after gene selection
+        # To keep TSS/TTS coordinate fixed, if position <= TSS/TTS, trim upstream, else trim downstream
+        if (abs_position <= ref_point and seq_type == "promoter") or (abs_position < ref_point and seq_type == "terminator"): # trimm upstream (TSS is part of downstream sequence, TTS part of upstream)
+            split_list[0] = split_list[0][motifs.shape[1]:,:]
+        else: # trim downstream
+            split_list[1] = split_list[1][:(split_list[1].shape[0]-motifs.shape[1]),:]
+        mutated_list = []
+        for m in range(3):
+            to_insert = motifs[m,:,:]
+            motif_inserted = np.concatenate((split_list[0], to_insert, split_list[1]), axis=0) # concat
+            assert(motif_inserted.shape[0]==6200)
+            mutated_list.append(np.expand_dims(motif_inserted, axis=0))
+        return mutated_list
+
+
+    mutated_seq_list = [] #
+    prom_list = [] #
+    term_list = [] #
+    rel_idx_lst = [] #
+    inserted_motif_lst = [] #
+    name_lst = [] #
+    motif_type_lst = [] #
+    motif_name_lst = [] #
+
+
+    TSS = 5000
+    TTS = 1200
+    # every 10th position in +- 500 bp range, offset by motif_idx
+    positions = [((-500 + motif_idx) + (10*x)) for x in range(100)]
+
+
+    for seq_type in ["promoter", "terminator"]:
+        for i in tqdm(range(100)):
+            motif_types = ["TFBS", "scrambled", "random"]
+            type_num = len(motif_types)
+            motif_type_lst.extend(motif_types)
+            motifs = generate_motifs(ppm)
+            inserted_motif_lst.extend(motifs)
+            motifs = utils.one_hot(pd.Series(motifs)) # TFBS, scrambled TFBS, random motif
+            motif_name_lst.extend([motif_name for j in range(type_num)])
+            rel_idx_lst.extend([positions[i] for j in range(type_num)])
+            mutated_seq_list.extend([seq_type for j in range(type_num)])
+
+            # draw random sample that is not masked at insertion position
+            sample_idx = get_sample_idx(prom, (TSS+positions[i])) if seq_type == "promoter" else get_sample_idx(term, (TTS+positions[i]))
+            prom_sample = prom[sample_idx,:,:]
+            term_sample = term[sample_idx,:,:]
+            name_lst.extend([names[sample_idx] for j in range(type_num)])
+
+            if seq_type == "promoter":
+                prom_list.extend(mutate_seq(prom_sample, positions[i], TSS, motifs, seq_type))
+                term_list.extend([np.expand_dims(term_sample, axis=0) for j in range(type_num)])
+            else:
+                term_list.extend(mutate_seq(term_sample, positions[i], TTS, motifs, seq_type))
+                prom_list.extend([np.expand_dims(prom_sample, axis=0) for j in range(type_num)])
+
+
+    df = pd.DataFrame({'name': name_lst, 'motif_type': motif_type_lst, 'motif_name': motif_name_lst, 'motif': inserted_motif_lst,
+                       'mutated_sequence_type': mutated_seq_list, 'relative_idx': rel_idx_lst})
+
+    assert(len(prom_list) == len(term_list) == len(df.index))
+
+    prom = np.concatenate(prom_list, axis=0)
+    term = np.concatenate(term_list, axis=0)
+
+    del mutated_seq_list #
+    del prom_list
+    del term_list
+    del rel_idx_lst #
+    del inserted_motif_lst #
+    del name_lst #
+    del motif_type_lst #
+    del motif_name_lst #
+
+    return df, prom, term
 
 
 
-    TSS=5000
-    TTS=1200
-    prom_arr = np.load(prom_path)['arr_0']
-    term_arr = np.load(term_path)['arr_0']
-    names, prom_arr, term_arr = subset_array(prom_array=prom_arr, term_array=term_arr, name_path=name_path, group_path_list=group_path_list, TSS=TSS, TTS=TTS)
-    mutated_prom_list = []
-    original_prom_list = []
-    mutated_term_list = []
-    original_term_list = []
-
-    prom_idx_lst = []
-    term_idx_lst = []
-    inserted_motif_lst = []
-    new_name_lst = []
-    parent_name_lst = []
-    motif_type_lst = []
-    for i in tqdm(range(len(names))):
-        list_of_motif_lists = generate_motif_list()
-        df_list = []
-        for motif_type, motif_list in zip(["TFBS", "scrambled", "random"], list_of_motif_lists):
-            motifs = utils.one_hot(pd.Series(motif_list)) # new set of probabilistically generated motifs for each sequence
-            for j in range(n_insert):
-                motif_type_lst.append(motif_type)
-                to_insert=motifs[j,:,:]
-                parent_name_lst.append(names[i])
-                new_name_lst.append(names[i]+f":{motif_type}_{j}")
-                inserted_motif_lst.append(motif_list[j])
-                idx_choices = np.asarray(prom_arr[i,(TSS-1000):(TSS+1000),:].sum(axis=1) == 1).nonzero()[0].tolist()
-                random_prom_idx = choice(idx_choices) + TSS - 1000 # samples from -1000 to 999 around TSS, except masked regions
-                prom_idx_lst.append(random_prom_idx)
-                split_prom_list = np.split(prom_arr[i,:,:], [random_prom_idx], axis=0) # axis 0 is length axis after gene selection
-                # To keep TSS coordinate fixed, if random_prom_idx <= TSS, trim upstream, else trim downstream (TSS is part of 5kb downstream sequence!)
-                if random_prom_idx <= TSS: # trimm upstream
-                    split_prom_list[0] = split_prom_list[0][motifs.shape[1]:,:]
-                else: # trim downstream
-                    split_prom_list[1] = split_prom_list[1][:(split_prom_list[1].shape[0]-motifs.shape[1]),:]
-                motif_inserted_prom = np.concatenate((split_prom_list[0], to_insert, split_prom_list[1]), axis=0) # concat
-                assert(motif_inserted_prom.shape[0]==6200)
-                mutated_prom_list.append(np.expand_dims(motif_inserted_prom, axis=0))
-                original_prom_list.append(np.expand_dims(prom_arr[i,:,:], axis=0))
-
-                idx_choices = np.asarray(term_arr[i,(TTS-1000):(TTS+1000),:].sum(axis=1) == 1).nonzero()[0].tolist()
-                random_term_idx = choice(idx_choices) + TTS - 1000 # samples from -1000 to 999 around TTS, except masked region
-                term_idx_lst.append(random_term_idx)
-                split_term_list = np.split(term_arr[i,:,:], [random_term_idx], axis=0)
-                # To keep TTS coordinate fixed, if random_term_idx < TTS, trim upstream, else trim downstream (TTS is part of 1.2 kb upstream sequence!)
-                if random_term_idx < TTS: # trim upstream
-                    split_term_list[0] = split_term_list[0][motifs.shape[1]:,:]
-                else: # trim downstream
-                    split_term_list[1] = split_term_list[1][:(split_term_list[1].shape[0]-motifs.shape[1]),:]
-                motif_inserted_term = np.concatenate((split_term_list[0], to_insert, split_term_list[1]), axis=0)
-                assert(motif_inserted_term.shape[0]==6200)
-                mutated_term_list.append(np.expand_dims(motif_inserted_term, axis=0))
-                original_term_list.append(np.expand_dims(term_arr[i,:,:],axis=0))
-
-    df = pd.DataFrame({'new_name': new_name_lst, 'parent_name': parent_name_lst,
-                       'motif_type': motif_type_lst, 'motif': inserted_motif_lst,
-                       'prom_insert_idx': prom_idx_lst, 'term_insert_idx': term_idx_lst})
-
-    assert(len(mutated_prom_list) == len(original_prom_list) == len(mutated_term_list) == len(original_term_list))
-
-    mutated_prom = np.concatenate(mutated_prom_list, axis=0)
-    original_prom = np.concatenate(original_prom_list, axis=0)
-    mutated_term = np.concatenate(mutated_term_list, axis=0)
-    original_term = np.concatenate(original_term_list, axis=0)
-
-    assert mutated_prom.shape[0] == (n_insert*prom_arr.shape[0])
-    assert mutated_term.shape[0] == (n_insert*term_arr.shape[0])
-    return df, mutated_prom, original_term, original_prom, mutated_term
-
-
-
-def make_predictions(organism, modelname, mutated_prom, original_prom, mutated_term, original_term):
-
-    rootdir=".."
-    modeldir = os.path.join(rootdir, "model_configs", modelname)
-    conf_path = os.path.join(modeldir, "config.tsv")
-    config = utils.dict_from_tsv(conf_path)
-
+def make_predictions(organism, modelname, config, fold, prom, term):
+    print(f"predicting")
     weights = os.path.join("..", "model_weights", modelname, organism, "masked_graphpart")
-    model_weights = os.path.join(weights, f"{modelname}_full.h5")
+    model_weights = os.path.join(weights, f"{modelname}_t_{fold}_median.h5")
 
-    model = None
-    exec(f"model = utils.build_{modelname}()")
+    if modelname == "nemo":
+        model = utils.build_nemo()
+    else:
+        raise Exception("model not implemented")
     model.load_weights(model_weights)
-    # get list of input names
-    input_names = ["promoter", "terminator"]
 
-    # get list of input data
-    prom_mut_inputs = [mutated_prom, original_term]
-    term_mut_inputs = [original_prom, mutated_term]
+    input_names = ["promoter", "terminator"]
+    inputs = [prom, term]
 
     # get regression predictions
-    batch_size=16
-    prom_mut_preds = model.predict(prom_mut_inputs, batch_size=16)
-    term_mut_preds = model.predict(term_mut_inputs, batch_size=16)
+    batch_size = 32
+    mut_preds = model.predict(inputs, batch_size=batch_size)
 
     # get scaler for inverse transformation
-    scaler_path = f"../data/{organism}/masked_graphpart_fold_data/scalers/scaler_full.pkl"
+    scaler_path = f"../data/{organism}/masked_graphpart_fold_data/scalers/scaler_{fold}.pkl"
     scaler = load(open(scaler_path, 'rb'))
 
     # perform inverse transformation
-    n_outputs = int(config["num_outputs"])
-    prom_mut_preds = scaler.inverse_transform(prom_mut_preds.reshape(-1,n_outputs))  #scaler expects 2D-array
-    term_mut_preds = scaler.inverse_transform(term_mut_preds.reshape(-1,n_outputs))
-    return prom_mut_preds, term_mut_preds
+    mut_preds = inverse_transform(mut_preds, scaler)  #scaler expects 2D-array
+    return mut_preds
 
 
-def add_original_preds(df, original_pred_path):
-    pred_df = pd.read_csv(original_pred_path, delimiter="\t", header=0, index_col=False)
+def add_baseline_preds(df, baseline_pred_path):
+    pred_df = pd.read_csv(baseline_pred_path, delimiter="\t", header=0, index_col=False)
     baseline = []
-    for name in df["parent_name"].tolist():
-        # TODO extend for min and max expression
+    for name in df["name"].tolist():
         baseline.append(pred_df.loc[pred_df["Gene"] == name, "Median_Expression"].iloc[0])
     df["baseline"] = baseline
     return df
 
 
+
+def get_ppm(pwm_path: str):
+        pwm = pd.read_csv(pwm_path, delimiter="\t", header=None, comment="#")
+        ppm = pwm
+        for col in range(len(pwm.columns)):
+            ppm.iloc[:,col] = (ppm.iloc[:,col]) / (ppm.iloc[:,col].sum())
+        return ppm
+
+
+def exclude_TF_associated(test_set: dict, names: list, TF_family_ID_path: str) -> dict:
+    to_exclude = pd.read_csv(TF_family_ID_path, delimiter=None, header=None).iloc[:,0].tolist()
+    keep = [False if name in to_exclude else True for name in names]
+    for key, value in test_set.items():
+        test_set[key] = value[keep] if value.ndim == 1 else value[keep,:] if value.ndim == 2 else value[keep,:,:]
+    names=[names[i] for i in range(len(names)) if keep[i]]
+    return test_set, names
+
+
 def main():
-    parser = argparse.ArgumentParser(
+    '''
+    For every test fold, the corresponding model (trained on the remaining 90% of data) is used to make predictions on mutated genes from the test fold.
+    For a given TF-family, 10 random TF motifs per test fold are loaded as PWMs and transformed into PPMs.
+    For each PPM, a motif (dynamically generated based on PPM probabilities) is inserted into every 10th position around the TSS and TTS, using the fold index as an offset.
+    At the same position, using the same TF-motif, derivative motifs aure also inserted as controls.
+    The first control is a scrambled version of the motif, the second is a completely random motif with the same length.
+    Background sequences for the insertion are selected from the subset of test set samples that are not masked at the given position, by randomly choosing one of the non-masked sequences at each position.
+    Predictions are then made on the mutated samples (one motif insertion per mutated sample, 10 mutated samples per position (+-500 bp) for a given TF family, excluding controls)
+    Precalculated baseline predictions made on the origingal sequences are used as reference
+    '''
+    parser = ArgumentParser(
                     prog='mutate_sequences.py',
                     description='This program inserts motifs into promoter and terminator sequences and predicts expression on the mutated sequences',
                     epilog='')
-    parser.add_argument('-p', '--pwm_path')
     parser.add_argument('-o', '--organism', default='Bnapus')
     parser.add_argument('-a', '--associated_IDs')
-    TF_family_ID_path = parser.associated_IDs
     parser.add_argument('-f', '--TF_family')
     parser.add_argument('-m', '--modelname', default='nemo')
-    n_insert=20
-    results = os.path.join("..", "results", parser.modelname, parser.organism, "masked_graphpart")
 
+    args = parser.parse_args()
+    TF_family_ID_path = args.associated_IDs
+    results = os.path.join("..", "results", args.modelname, args.organism, "masked_graphpart")
+    rootdir=".."
+    modeldir = os.path.join(rootdir, "model_configs", args.modelname)
+    conf_path = os.path.join(modeldir, "config.tsv")
+    config = utils.dict_from_tsv(conf_path)
 
-    high_path = os.path.join(results, "IDs/expression/high_expr_ids.lst")
-    medium_path = os.path.join(results, "IDs/expression/medium_expr_ids.lst")
-    low_path = os.path.join(results, "IDs/expression/low_expr_ids.lst")
+    # TODO IMPORTANT! changed algorithm to take any gene from respective test fold into account, not just moderately expressed!
 
-    outdir = os.path.join(results, f"{parser.TF_family}_insertion")
+    outdir = os.path.join(results, "motif_insertion")
     os.makedirs(outdir, exist_ok=True)
-    initial = parser.organism[0].upper()
-    original_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.full.txt")
+    initial = args.organism[0].upper()
+
+    full_df = pd.DataFrame({'name': [], 'motif_type': [], 'motif_name': [], 'motif': [],
+                            'mutated_sequence_type': [], 'relative_idx': [],
+                            'mutated_pred': [], 'baseline': []})
+
+    # total number of TFs in family
+    cmd_string = f"ls ../data/motifs/{args.TF_family} | wc -w"
+    num_TFs = int(str(subprocess.check_output(cmd_string, shell=True)).replace("b'", "").replace("\\n'", ""))
+
+    for fold in range(10):
+        # random sample of 10 motifs of respectife TF family
+        choices = [x+1 for x in range(num_TFs)]
+        TF_sample = sample(choices, 10)
+        datadir=f"../data/{args.organism}"
+        folddir=os.path.join(datadir, "masked_graphpart_fold_data")
+        test = utils.get_set(config, outP=5000, inP=1200, outT=5000, inT=1200, datadir=folddir, set="test",
+                      test_fold=fold, valid_fold=None)
+        test["output"] = test["output"][:,out_idx]
+        names = utils.translate_IDs(test["ID"], datadir)
+
+        test, names = exclude_TF_associated(test, names, TF_family_ID_path)
+
+        for motif_idx in range(10):
+            pwm_file = str(subprocess.check_output(f"ls ../data/motifs/{args.TF_family} | head -n {TF_sample[motif_idx]} | tail -n 1", shell=True)).replace("b'", "").replace("\\n'", "")
+            pwm_path = os.path.join(f"../data/motifs/{args.TF_family}", pwm_file)
+            motif_name = pwm_file.split("/")[-1].replace(".pwm", "")
+            ppm = get_ppm(pwm_path)
+            df, prom, term = insert_motifs(test["promoter"], test["terminator"], names, ppm, motif_idx, motif_name, results)
+            mut_preds = make_predictions(args.organism, args.modelname, config, fold, prom, term)
+
+            df["mutated_pred"] = mut_preds
+
+            baseline_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.t_{fold}.txt")
+            df = add_baseline_preds(df, baseline_pred_path)
+            full_df = pd.concat([full_df, df], ignore_index=True)
+        del test
 
 
-
-    for exp_group in ["medium"]: #["high", "medium", "low"]:
-    if exp_group=="high":
-        group_path_list = [medium_path, low_path] # groups to exclude
-    elif exp_group=="medium":
-        group_path_list = [low_path, high_path]
-    else:
-        group_path_list = [high_path, medium_path]
-    group_path_list.append(TF_family_ID_path)
-
-    df, mutated_prom, original_term, original_prom, mutated_term = insert_motifs(parser.pwm_path, parser.organism, group_path_list, n_insert, results)
-    prom_mut_preds, term_mut_preds = make_predictions(parser.organism, parser.modelname, mutated_prom, original_prom, mutated_term, original_term)
-
-    df["prom_mut_preds"] = prom_mut_preds
-    df["term_mut_preds"] = term_mut_preds
-
-    df = add_original_preds(df, original_pred_path)
-
-    motif_type = parser.pwm_path.split("/")[-1].replace(".pwm", "")
-    f_out = os.path.join(outdir, f"{motif_type}_{exp_group}_exp.tsv")
-    df.to_csv(f_out, index=False, header=True, sep='\t')
+    f_out = os.path.join(outdir, f"{args.TF_family}.tsv")
+    full_df.to_csv(f_out, index=False, header=True, sep='\t')
 
 if __name__ == "__main__":
     main()

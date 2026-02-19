@@ -213,7 +213,7 @@ else:
     model_outfile = f"{model_descriptor}_t_{str(test_fold)}_v_{str(valid_fold)}_{tpm_type}.h5"
     if N is not None:
         print(f"repeat: {N}")
-        model_outfile = model_outfile.replace(f"{tpm_type}.h5", f"_n_{N}_{tpm_type}.h5")
+        model_outfile = model_outfile.replace(f"{tpm_type}.h5", f"n_{N}_{tpm_type}.h5")
     check_cb = ModelCheckpoint(os.path.join(outdir, model_outfile),
                            monitor='val_loss', verbose=1,
                            save_best_only=True, mode='min')

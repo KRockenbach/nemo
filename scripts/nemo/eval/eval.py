@@ -159,9 +159,12 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
     if modelname == "Basenji-5K":
         from ..models.Basenji import basenji_model
         model = basenji_model()
-    elif modelname == "xpresso":
-        from ..models.Xpresso import build_xpresso
-        model = build_xpresso()
+    elif modelname == "xpresso" or modelname == "xpresso_no_halflife":
+        from ..models.Xpresso import build_xpresso, build_xpresso_no_halflife
+        if modelname == "xpresso":
+            model = build_xpresso()
+        else:
+            model = build_xpresso_no_halflife()
     elif modelname == "nemo":
         from ..models.nemo import build_nemo
         model = build_nemo()
@@ -211,6 +214,7 @@ def evaluate(test_fold, valid_fold, model_file, scaler, randomize, N):
     input_names = list(test.keys())
     # get rid of output and ID
     input_names = input_names[:(len(input_names)-2)]
+    print(input_names)
 
     # get list of input data
     inputs = []

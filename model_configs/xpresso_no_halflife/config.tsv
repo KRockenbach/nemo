@@ -1,0 +1,6 @@
+use_promoter	True
+use_terminator	False
+use_halflife	False
+use_xpresso_optimization	True
+use_one_cycle_optimization	False
+num_outputs	1

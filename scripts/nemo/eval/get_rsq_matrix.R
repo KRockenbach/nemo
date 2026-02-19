@@ -44,6 +44,11 @@ masking <- args[3]
 partitioning <- args[4]
 model_org <- args[5]
 
+if (partitioning == "graphpart_Bn"){
+    tpm_types <- c("median", "max")
+} else {
+    tmp_types <- c("median")
+}
 
 if (partitioning == "graphpart" | partitioning == "random"){
   all = TRUE
@@ -61,6 +66,7 @@ if (all) {
   N_col <- c()
   rsq_col <- c()
   org_col <- c()
+  tpm_type_col <- c()
   for (t in 0:9){
     predpath <- paste(preddir, "/predictions.t_", as.character(t), ".txt", sep="")
     actpath <- paste(preddir, "/actual.t_", as.character(t), ".txt", sep="")
@@ -71,6 +77,7 @@ if (all) {
     test_col = c(test_col, t)
     valid_col <- c(valid_col, NA)
     N_col <- c(N_col, NA)
+    tpm_type_col <- c(tpm_type_col, "median")
     r <- cor(act_df[,1], pred_df[,1], method="pearson")
     rsq_col <- c(rsq_col, r**2)
     org_col <- c(org_col, organism)
@@ -84,12 +91,13 @@ if (all) {
       test_col <- c(test_col, t)
       valid_col <- c(valid_col, NA)
       N_col <- c(N_col, NA)
+      tpm_type_col <- c(tpm_type_col, "median")
       r <- cor(act_df[,1], pred_df[,1], method="pearson")
       rsq_col <- c(rsq_col, r**2)
       org_col <- c(org_col, "BnapusDS")
     }
   }
-  rsq_matrix <- cbind(test_col, valid_col, N_col, rsq_col)
+  rsq_matrix <- cbind(test_col, valid_col, N_col, tpm_type_col, rsq_col)
   len <- length(rsq_col)
   rsq_matrix <- cbind(rep(model, len), org_col, rep(masking, len), rep(partitioning, len), rep(model_org, len), rsq_matrix)
 } else {
@@ -99,46 +107,57 @@ if (all) {
   N_col <- c()
   rsq_col <- c()
   model_col <- c()
+  tpm_type_col <- c()
   if (model == "nemo"){
     validation <- c(as.character(1), "None")
   } else {
     validation <- c(as.character(1))
   }
+
   for (v in validation){
     for (N in 0:9){
-      N <- as.character(N)
-      # use stringr::str_replace(string, pattern, replacement) to adjust filenames conditionally
-      # create N column and valid_fold column in df, save NA where not applicable
-      predpath <- paste(preddir, "/predictions.t_", as.character(t), ".txt", sep="")
-      actpath <- paste(preddir, "/actual.t_", as.character(t), ".txt", sep="")
-      if (v != "None"){
-        predpath <- str_replace(string=predpath, pattern=".txt", replacement=paste("_v_", v, ".txt", sep=""))
+      for (tt in 1:length(tpm_types)){
+        tpm_type <- tpm_types[tt]
+        N <- as.character(N)
+        # use stringr::str_replace(string, pattern, replacement) to adjust filenames conditionally
+        # create N column and valid_fold column in df, save NA where not applicable
+        predpath <- paste(preddir, "/predictions.t_", as.character(t), ".txt", sep="")
+        actpath <- paste(preddir, "/actual.t_", as.character(t), ".txt", sep="")
+        if (v != "None"){
+          predpath <- str_replace(string=predpath, pattern=".txt", replacement=paste("_v_", v, ".txt", sep=""))
+        }
+        predpath <- str_replace(string=predpath, pattern=".txt", replacement=paste("_n_", N, ".txt", sep=""))
+        if (partitioning == "graphpart_Bn"){
+          actpath <- str_replace(string=actpath, pattern=".txt", replacement=paste("_", tpm_type, ".txt", sep=""))
+          predpath <- str_replace(string=predpath, pattern=".txt", replacement=paste("_", tpm_type, ".txt", sep=""))
+        }
+        pred_df <- read.table(predpath, header=TRUE, sep="\t", row.names=1)
+        act_df <- read.table(actpath, header=TRUE, sep="\t", row.names=1)
+        pred_df <- as.data.frame(pred_df[order(rownames(pred_df)), ])
+        act_df <- as.data.frame(act_df[order(rownames(act_df)), ])
+        test_col <- c(test_col, t)
+        if (v == "None"){
+          valid_col <- c(valid_col, NA)
+        } else {
+          valid_col <- c(valid_col, v)
+        }
+        tpm_type_col <- c(tpm_type_col, tpm_type)
+        N_col <- c(N_col, N) 
+        r <- cor(act_df[,1], pred_df[,1], method="pearson")
+        rsq_col <- c(rsq_col, r**2)
+        model_col <- c(model_col, model)
       }
-      predpath <- str_replace(string=predpath, pattern=".txt", replacement=paste("_n_", N, ".txt", sep=""))
-      pred_df <- read.table(predpath, header=TRUE, sep="\t", row.names=1)
-      act_df <- read.table(actpath, header=TRUE, sep="\t", row.names=1)
-      pred_df <- as.data.frame(pred_df[order(rownames(pred_df)), ])
-      act_df <- as.data.frame(act_df[order(rownames(act_df)), ])
-      test_col <- c(test_col, t)
-      if (v == "None"){
-        valid_col <- c(valid_col, NA)
-      } else {
-        valid_col <- c(valid_col, v)
-      }
-      N_col <- c(N_col, N) 
-      r <- cor(act_df[,1], pred_df[,1], method="pearson")
-      rsq_col <- c(rsq_col, r**2)
-      model_col <- c(model_col, model)
       if (model == "nemo" & v != "None"){
-        for (seq in c("prom", "term")){
-          predpath <- paste(preddir, "/rand_", seq ,"_predictions.t_", as.character(t), "_v_", as.character(v), "_n_", as.character(N), ".txt", sep="")
-          actpath <- paste(preddir, "/actual.t_", as.character(t), ".txt", sep="")
+        for (seq in c("prom_up", "prom_down", "term_up", "term_down")){
+          predpath <- paste(preddir, "/rand_", seq ,"_predictions.t_", as.character(t), "_v_", as.character(v), "_n_", as.character(N), "_median.txt", sep="")
+          actpath <- paste(preddir, "/actual.t_", as.character(t), "_median.txt", sep="")
           pred_df <- read.table(predpath, header=TRUE, sep="\t", row.names=1)
           act_df <- read.table(actpath, header=TRUE, sep="\t", row.names=1)
           pred_df <- as.data.frame(pred_df[order(rownames(pred_df)), ])
           act_df <- as.data.frame(act_df[order(rownames(act_df)), ])
           test_col <- c(test_col, t)
           valid_col <- c(valid_col, v)
+          tpm_type_col <- c(tpm_type_col, "median")
           N_col <- c(N_col, N)
           r <- cor(act_df[,1], pred_df[,1], method="pearson")
           rsq_col <- c(rsq_col, r**2)
@@ -147,13 +166,14 @@ if (all) {
       }
     }
   }
-  rsq_matrix <- cbind(as.integer(test_col), as.integer(valid_col), as.integer(N_col), as.numeric(rsq_col))
+
+  rsq_matrix <- cbind(as.integer(test_col), as.integer(valid_col), as.integer(N_col), as.character(tpm_type_col), as.numeric(rsq_col))
   len <- length(model_col)
   rsq_matrix <- cbind(model_col, rep(organism, len), rep(masking, len), rep(partitioning, len), rep(model_org, len), rsq_matrix)
 }
 
 
-colnames(rsq_matrix) <- c("model", "test_organism", "masking", "partitioning", "train_organism", "test_fold", "valid_fold", "N", "rsq")
+colnames(rsq_matrix) <- c("model", "test_organism", "masking", "partitioning", "train_organism", "test_fold", "valid_fold", "N", "tpm_type", "rsq")
 
 out_file <- paste(root, "/results/rsq_df.tsv", sep="")
 rsq_df <- as.matrix(read.table(out_file, header=TRUE, sep="\t"))
