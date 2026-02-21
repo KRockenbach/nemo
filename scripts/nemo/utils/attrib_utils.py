@@ -47,7 +47,7 @@ import numpy as np
 import shap
 from tqdm import tqdm
 from deeplift.dinuc_shuffle  import *
-from random import sample
+from random import sample, choice
 if __name__ == "main":
     from model_utils import *
 else:
@@ -277,3 +277,81 @@ def save_clear_inputs(names, inputs, outdir):
             method = "GradientExplainer"
             seq_filename = "".join([name, "_clear_seqs_", method, ".full.npz"])
             np.savez_compressed(os.path.join(outdir, seq_filename), seq_arr)
+
+
+
+def modisco_transform(attrib_dir):
+    from scipy.signal import savgol_filter
+    import pandas as pd
+    n_samples = {}
+    for seq_name in ["promoter", "terminator"]:
+        attr_path = os.path.join(attrib_dir, seq_name + "_shap_GradientExplainer.full.npz")
+        in_path = os.path.join(attrib_dir, seq_name + "_seqs_GradientExplainer.full.npz")
+        full_attr_arr = np.load(attr_path)['arr_0']
+        full_in_arr = np.load(in_path)['arr_0']
+        #subset to interval +- 500 bp around TSS/TTS
+        if seq_name == "promoter":
+            up=5000
+            down=1200
+        else:
+            up=1200
+            down=5000
+
+        for start in range(-500, 500, 100):
+            in_arr, attr_arr = trim_array(full_in_arr, full_attr_arr, up, down, start=start, stop=(start+100))
+            # transform to length last
+            in_arr = np.swapaxes(in_arr, 1, 2)
+            attr_arr = np.swapaxes(attr_arr, 1, 2)
+            keep = []
+            seq_len = in_arr.shape[2]
+            # masked sequences are not supported by tf-modisco -> use only sequences that are not masked in respective sequence interval
+            for sample in range(in_arr.shape[0]):
+                if np.sum(in_arr[sample,:,:]) == seq_len:
+                    keep.append(True)
+                else:
+                    keep.append(False)
+            in_arr = in_arr[keep,:,:]
+            attr_arr = attr_arr[keep,:,:]
+            try:
+                seq_list = n_samples["sequence"]
+                seq_list.append(seq_name)
+                n_samples["sequence"] = seq_list
+                range_list = n_samples["range"]
+                range_list.append(f"{start}to{start+100}")
+                n_samples["range"] = range_list
+                samples_list = n_samples["num_samples"]
+                samples_list.append(in_arr.shape[0])
+                n_samples["num_samples"] = samples_list
+            except:
+                n_samples["sequence"] = [seq_name]
+                n_samples["range"] = [f"{start}to{start+100}"]
+                n_samples["num_samples"] = [in_arr.shape[0]]
+
+            # save sequences
+            out_in = in_path.replace("full", f"modisco_%{start}to{start+100}%")
+            np.savez_compressed(out_in, in_arr)
+            del in_arr
+
+            # smooth attributions
+            magnitude = np.sqrt(np.sum(np.multiply(attr_arr, attr_arr), axis=1, keepdims=True)) # shape = (# examples, 1, seq length)
+            unit_vec_arr = np.divide(attr_arr, magnitude)
+            np.nan_to_num(unit_vec_arr, copy=False, nan=0.0)
+            del attr_arr
+            magnitude = savgol_filter(magnitude, window_length = 21, polyorder = 1, axis = 2) #45
+            attr_arr = np.multiply(unit_vec_arr, magnitude)
+            del unit_vec_arr, magnitude
+
+            # save attributions
+            out_attr = attr_path.replace("full", f"modisco_%{start}to{start+100}%")
+            np.savez_compressed(out_attr, attr_arr)
+            del attr_arr
+        del full_in_arr, full_attr_arr
+    print("Number of samples based on interval:")
+    print(n_samples)
+    sample_df = pd.DataFrame.from_dict(n_samples)
+    sample_df.to_csv(os.path.join(attrib_dir, "modisco_sample_numbers.tsv"), sep="\t", index=False, header=True)
+
+
+
+
+

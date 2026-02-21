@@ -8,9 +8,9 @@ apt install parallel
 
 Setup environments:  
 ```
-mamba create -f nemo.yaml
-mamba create -f nemo_cpu.yaml
-mamba create -f prep.yaml
+CONDA_OVERRIDE_CUDA="11.8" mamba env create -f nemo.yaml
+mamba env create -f nemo_cpu.yaml
+mamba env create -f prep.yaml
 ```
 
 
