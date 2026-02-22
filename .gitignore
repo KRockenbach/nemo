@@ -4,7 +4,7 @@ model_configs/LR_range_test
 model_weights/
 data/
 scripts/nemo/utils/one_cycle_scheduler_tf/
-results/
+result*/
 unpack.sh
 validation/
 scripts/*tmp*
