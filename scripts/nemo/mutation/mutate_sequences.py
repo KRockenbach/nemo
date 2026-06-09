@@ -54,7 +54,6 @@ import subprocess
 n_outputs = 1
 out_idx = 2 #median
 
-
 def inverse_transform(z, scaler, n_outputs = n_outputs, out_idx = out_idx):
         z=z.reshape(-1,n_outputs)
         return (z*scaler.scale_[out_idx])+scaler.mean_[out_idx]
@@ -76,10 +75,11 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
             weights = ppm.iloc[:,j].to_list()
             motif += np.random.choice(choices, p=weights)
             random_motif += np.random.choice(choices, p=[0.25, 0.25, 0.25, 0.25])
+            reversed_motif = motif[::-1]
         nucleotides = list(motif)
         shuffle(nucleotides)
         scrambled_motif=''.join(nucleotides)
-        return motif, scrambled_motif, random_motif
+        return motif, scrambled_motif, random_motif, reversed_motif
 
     def get_sample_idx(array, position) -> np.ndarray:
         sample_bool = np.nonzero(np.sum(array[:,position,:], axis=1))[0] # tuple
@@ -87,7 +87,7 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
         sample_idx = choice(choices)
         return sample_idx
 
-    def mutate_seq(sample, position, ref_point, motifs, seq_type) -> list:
+    def mutate_seq(sample, position, ref_point, motifs, seq_type, type_num=4) -> list:
         abs_position = ref_point + position
         split_list = np.split(sample, [abs_position], axis=0) # axis 0 is length axis after gene selection
         # To keep TSS/TTS coordinate fixed, if position <= TSS/TTS, trim upstream, else trim downstream
@@ -96,7 +96,7 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
         else: # trim downstream
             split_list[1] = split_list[1][:(split_list[1].shape[0]-motifs.shape[1]),:]
         mutated_list = []
-        for m in range(3):
+        for m in range(type_num):
             to_insert = motifs[m,:,:]
             motif_inserted = np.concatenate((split_list[0], to_insert, split_list[1]), axis=0) # concat
             assert(motif_inserted.shape[0]==6200)
@@ -122,7 +122,7 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
 
     for seq_type in ["promoter", "terminator"]:
         for i in tqdm(range(100)):
-            motif_types = ["TFBS", "scrambled", "random"]
+            motif_types = ["TFBS", "scrambled", "random", "reversed"]
             type_num = len(motif_types)
             motif_type_lst.extend(motif_types)
             motifs = generate_motifs(ppm)
@@ -139,7 +139,7 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
             name_lst.extend([names[sample_idx] for j in range(type_num)])
 
             if seq_type == "promoter":
-                prom_list.extend(mutate_seq(prom_sample, positions[i], TSS, motifs, seq_type))
+                prom_list.extend(mutate_seq(prom_sample, positions[i], TSS, motifs, seq_type, type_num=type_num))
                 term_list.extend([np.expand_dims(term_sample, axis=0) for j in range(type_num)])
             else:
                 term_list.extend(mutate_seq(term_sample, positions[i], TTS, motifs, seq_type))
@@ -169,10 +169,13 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
 
 def make_predictions(organism, modelname, config, fold, prom, term):
     print(f"predicting")
-    weights = os.path.join("..", "model_weights", modelname, organism, "masked_graphpart")
-    model_weights = os.path.join(weights, f"{modelname}_t_{fold}_median.h5")
+    weights = os.path.join("..", "model_weights", modelname.replace("_full", ""), organism, "masked_graphpart")
+    if modelname == "nemo_full":
+        model_weights = os.path.join(weights, f"{modelname}_median.h5")
+    else:
+        model_weights = os.path.join(weights, f"{modelname}_t_{fold}_median.h5")
 
-    if modelname == "nemo":
+    if modelname in ["nemo", "nemo_full"]:
         model = utils.build_nemo()
     else:
         raise Exception("model not implemented")
@@ -186,7 +189,10 @@ def make_predictions(organism, modelname, config, fold, prom, term):
     mut_preds = model.predict(inputs, batch_size=batch_size)
 
     # get scaler for inverse transformation
-    scaler_path = f"../data/{organism}/masked_graphpart_fold_data/scalers/scaler_{fold}.pkl"
+    if modelname == "nemo_full":
+        scaler_path = f"../data/{organism}/masked_graphpart_fold_data/scalers/scaler_full.pkl"
+    else:
+        scaler_path = f"../data/{organism}/masked_graphpart_fold_data/scalers/scaler_{fold}.pkl"
     scaler = load(open(scaler_path, 'rb'))
 
     # perform inverse transformation
@@ -240,15 +246,22 @@ def main():
     parser.add_argument('-a', '--associated_IDs')
     parser.add_argument('-f', '--TF_family')
     parser.add_argument('-m', '--modelname', default='nemo')
+    parser.add_argument('-e', '--expr', default='all') # all, low, medium, high
 
     args = parser.parse_args()
     TF_family_ID_path = args.associated_IDs
-    results = os.path.join("..", "results", args.modelname, args.organism, "masked_graphpart")
+    results = os.path.join("..", "results", args.modelname.replace("_full", ""), args.organism, "masked_graphpart")
     rootdir=".."
-    modeldir = os.path.join(rootdir, "model_configs", args.modelname)
+    if args.modelname == "nemo_full":#
+        modeldir = os.path.join(rootdir, "model_configs", "nemo")
+    else:
+        modeldir = os.path.join(rootdir, "model_configs", args.modelname)
     conf_path = os.path.join(modeldir, "config.tsv")
     config = utils.dict_from_tsv(conf_path)
 
+    high_ID_path = f"../results/nemo/{args.organism}/masked_graphpart/IDs/expression/high_expr_ids.lst"
+    medium_ID_path = f"../results/nemo/{args.organism}/masked_graphpart/IDs/expression/medium_expr_ids.lst"
+    low_ID_path = f"../results/nemo/{args.organism}/masked_graphpart/IDs/expression/low_expr_ids.lst"
     # TODO IMPORTANT! changed algorithm to take any gene from respective test fold into account, not just moderately expressed!
 
     outdir = os.path.join(results, "motif_insertion")
@@ -275,6 +288,15 @@ def main():
         names = utils.translate_IDs(test["ID"], datadir)
 
         test, names = exclude_TF_associated(test, names, TF_family_ID_path)
+        if args.expr == "low":
+            test, names = exclude_TF_associated(test, names, high_ID_path)
+            test, names = exclude_TF_associated(test, names, medium_ID_path)
+        elif args.expr == "medium":
+            test, names = exclude_TF_associated(test, names, high_ID_path)
+            test, names = exclude_TF_associated(test, names, low_ID_path)
+        elif args.expr == "high":
+            test, names = exclude_TF_associated(test, names, medium_ID_path)
+            test, names = exclude_TF_associated(test, names, low_ID_path)
 
         for motif_idx in range(10):
             pwm_file = str(subprocess.check_output(f"ls ../data/motifs/{args.TF_family} | head -n {TF_sample[motif_idx]} | tail -n 1", shell=True)).replace("b'", "").replace("\\n'", "")
@@ -286,13 +308,20 @@ def main():
 
             df["mutated_pred"] = mut_preds
 
-            baseline_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.t_{fold}.txt")
+            if args.modelname == "nemo_full":
+                baseline_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.full.txt")
+            else:
+                baseline_pred_path = os.path.join(results, f"nemo{initial}_preds/predictions.t_{fold}.txt")
             df = add_baseline_preds(df, baseline_pred_path)
             full_df = pd.concat([full_df, df], ignore_index=True)
         del test
 
 
     f_out = os.path.join(outdir, f"{args.TF_family}.tsv")
+    if args.expr != "all":
+        f_out = os.path.join(outdir, f"{args.TF_family}_{args.expr}.tsv")
+    if args.modelname == "nemo_full":
+        f_out = f_out.replace(".tsv", ".nemo100.tsv")
     full_df.to_csv(f_out, index=False, header=True, sep='\t')
 
 if __name__ == "__main__":

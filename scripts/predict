@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+#========================================================================================================
+#title: predict
+#description: predict median expression using nemo100
+#author: Kevin Rockenbach
+#email: kevin.rockenbach@ag.uni-giessen.de
+#date: 2026-04-10
+#version: 1.0.0
+#usage: ./predict -d|--dir <DATA_DIRECTORY>
+#=========================================================================================================
+
+unset -v DIR
+unset -v WEIGHTS
+unset -v SCALER
+
+VALID_ARGS=$(getopt -o d:m:s:h --long datadir:,modelweights:,scaler:,help -- "$@")
+if [[ $? -ne 0 ]]; then
+  exit 1
+fi
+
+eval set -- "$VALID_ARGS"
+while [ : ]; do
+  case "$1" in
+  -d | --datadir)
+    DIR=$2
+    shift 2
+    ;;
+  -m | --modelweights)
+    WEIGHTS=$2
+    shift 2
+    ;;
+  -s | --scaler)
+    SCALER=$2
+    shift 2
+    ;;
+  -h | --help)
+    echo "Usage: $(basename $0) [-d | --datadir arg] [-m | --modelweights arg] [-s | --sclaer arg]"
+    exit 1
+    ;;
+  --)
+    shift
+    break
+    ;;
+  esac
+done
+
+if [ -z "$DIR" ] || [ -z "$WEIGHTS" ] || [ -z "$SCALER" ]; then
+  echo "One or more mandatory arguments missing"
+  echo "Usage: $(basename $0) [-d | --datadir arg] [-m | --modelweights arg] [-s | --sclaer arg]"
+  exit 1
+fi
+
+source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
+source ${CONDA_PREFIX}/etc/profile.d/conda.sh
+
+mamba activate prep
+
+SOURCE_PATH=$(dirname "${BASH_SOURCE[0]}")
+
+python ${SOURCE_PATH}/nemo/predict.py $DIR $WEIGHTS $SCALER
+
+mamba deactivate

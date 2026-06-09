@@ -51,9 +51,9 @@ datadir=sys.argv[1]
 # set up dictionaries
 
 
-if num_outputs = 1:
+if num_outputs == 1:
     h=["GENEID", "MEDIAN_EXPRESSION", "PROMOTER", "TERMINATOR"]
-elif num_outputs = 3:
+elif num_outputs == 3:
     h=["GENEID", "MINIMUM_EXPRESSION", "MEDIAN_EXPRESSION", "MAXIMUM_EXPRESSION", "PROMOTER", "TERMINATOR"]
 else:
     h=["GENEID", "MINIMUM_EXPRESSION", "FIRST_QUARTILE_EXPRESSION", "MEDIAN_EXPRESSION", "THIRD_QUARTILE_EXPRESSION", "MAXIMUM_EXPRESSION", "PROMOTER", "TERMINATOR"]

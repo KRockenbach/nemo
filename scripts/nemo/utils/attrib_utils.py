@@ -354,4 +354,43 @@ def modisco_transform(attrib_dir):
 
 
 
+def attribution_magnitude(attrib_dir):
+    from scipy.signal import savgol_filter
+    import pandas as pd
+    n_samples = {}
+    for seq_name in ["promoter", "terminator"]:
+        attr_path = os.path.join(attrib_dir, seq_name + "_shap_GradientExplainer.full.npz")
+        attr_arr = np.load(attr_path)['arr_0']
+        name_path = os.path.join(attrib_dir, "gene_names.lst")
+        names = []
+        with open(name_path, "r") as n:
+            for name in n.readlines():
+                names.append(name.rstrip())
+        #subset to interval +- 500 bp around TSS/TTS
+        if seq_name == "promoter":
+            position = pd.Series(range(-5000,1200))
+        else:
+            position = pd.Series(range(-1199,5001))
+
+        keep = ["Bnapus_Expr617_chrA09_005937", "Bnapus_Expr617_chrC03_001311", "Bnapus_Expr617_chrC07_000489"]
+        seq_len = 6200
+
+        df = pd.DataFrame(position)
+        df.columns = ["position"]
+        for keep_name in keep:
+            print(keep_name)
+            for i, name in enumerate(names):
+                if name == keep_name:
+                    idx = i
+            gene_attr = attr_arr[idx,:,:]
+
+            # smooth attributions
+            gene_importance = np.sqrt(np.sum(np.multiply(gene_attr, gene_attr), axis=1, keepdims=False)) # shape = (# examples, 1, seq length)
+            gene_importance = pd.Series(savgol_filter(gene_importance, window_length = 21, polyorder = 1, axis = 0)) #45
+
+            df.loc[:,keep_name] = gene_importance
+            # save attributions
+        out_path = os.path.join(attrib_dir, f"fig3_{seq_name}.tsv")
+        df.to_csv(out_path, sep="\t", index=False, header=True)
+
 

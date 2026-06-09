@@ -52,6 +52,12 @@ from tensorflow.keras.models import load_model
 from sklearn.preprocessing import StandardScaler
 from utils.model_utils import *
 
+out_idx=2
+def inverse_transform(z, scaler):
+        n_outputs=1
+        z=z.reshape(-1,n_outputs)
+        return (z*scaler.scale_[out_idx])+scaler.mean_[out_idx]
+
 
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')
 for device in gpu_devices:
@@ -60,17 +66,20 @@ for device in gpu_devices:
 root=".."
 
 datadir = sys.argv[1]
-if len(sys.argv) == 3:
+if len(sys.argv) > 2:
     model_file = sys.argv[2]
 else:
-    model_file = f"{root}/model_weights/nemo/Bnapus/masked_graphpart/nemo_full.h5"
+    model_file = f"{root}/model_weights/nemo/Bnapus/masked_graphpart/nemo_full_median.h5"
 
 modelname = "nemo" #weightdir.split("/")[-3]
 outdir = datadir #modeldir.replace("model_configs", "results")
 batch=120
 
+if len(sys.argv) > 3:
+    scaler = sys.argv[3]
+else:    
+    scaler = load(open("../data/Bnapus/masked_graphpart_fold_data/scalers/scaler_full.pkl", 'rb'))
 
-scaler = load(open(model_file.replace('nemo_full.h5', 'scaler_full.pkl'), 'rb'))
 
 # load test data
 test = get_set4pred(datadir=datadir)
@@ -110,7 +119,7 @@ gene_names = translate_IDs(test["ID"], datadir)
 
 
 
-y = scaler.inverse_transform(preds.reshape(-1,1))
+y = inverse_transform(preds, scaler)
 mat = np.column_stack((gene_names, y))
 colnames = ["Gene", "Prediction"]
 df = pd.DataFrame(mat, columns=colnames)

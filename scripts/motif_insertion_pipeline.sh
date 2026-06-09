@@ -105,8 +105,17 @@ for FAMILY in C2C2gata G2like NAC Trihelix bHLH MADS MYB bZIP TCP WRKY C2C2dof H
 do
   At_ID_PATH=$(ls ../data/Athaliana/parent_data/TF_ids/* | grep "${FAMILY}\.")
   Bn_ID_PATH=$(ls ../data/Bnapus/parent_data/TF_ids/* | grep "${FAMILY}\.")
-  CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" & pid1=$!
-  CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" & pid2=$!
+  #CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" --expr "all" & pid1=$!
+  #CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" --expr "all" & pid2=$!
+  #wait $pid1 $pid2
+  for EXPR in "medium" #"high" "low"
+  do
+    CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" --expr $EXPR & pid1=$!
+    CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" --expr $EXPR & pid2=$!
+    wait $pid1 $pid2
+  done
+  CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo_full" --expr "medium" & pid1=$!
+  CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo_full" --expr "medium" & pid2=$!
   wait $pid1 $pid2
 done
 

@@ -52,7 +52,10 @@ import random
 
 random.seed(1234)
 
-num_outputs = 5
+if len(sys.argv) > 3:
+    num_outputs = int(sys.argv[3])
+else:
+    num_outputs = 5
 
 ##################################################
 # AUXILLARY FUNCTION DEFINITIONS
@@ -68,13 +71,16 @@ def get_data(data_file):
     print("+++++++++++++++++++++++++++++++++++++++++++++++++")
     table = pd.read_table(data_file, index_col=0) # read data, gene ID used as index.
     #index later used to select based on graphpart cluster
-    if num_outputs == 1:
-        table = table.loc[:,["MEDIAN_EXPRESSION", "PROMOTER","TERMINATOR"]]
-    if num_outputs == 3:
-        table = table.loc[:,["MIN_EXPRESSION", "MEDIAN_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
+    if num_outputs == 0:
+        table = table.loc[:,["PROMOTER","TERMINATOR"]]
     else:
-        table = table.loc[:,["MIN_EXPRESSION", "Q1_EXPRESSION", "MEDIAN_EXPRESSION", "Q3_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
-    table.iloc[:,0:num_outputs] = np.log10(table.iloc[:,0:num_outputs]+0.1)
+        if num_outputs == 1:
+            table = table.loc[:,["MEDIAN_EXPRESSION", "PROMOTER","TERMINATOR"]]
+        elif num_outputs == 3:
+            table = table.loc[:,["MIN_EXPRESSION", "MEDIAN_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
+        else:
+            table = table.loc[:,["MIN_EXPRESSION", "Q1_EXPRESSION", "MEDIAN_EXPRESSION", "Q3_EXPRESSION", "MAX_EXPRESSION", "PROMOTER","TERMINATOR"]]
+        table.iloc[:,0:num_outputs] = np.log10(table.iloc[:,0:num_outputs]+0.1)
     assert (not table.isnull().any().any()) # assert that table is free of NaN values
     return table
 
@@ -116,8 +122,9 @@ if not os.path.exists(out_dir):
 table = get_data(data_file)
 # fit scaler and mapper
 print('Total Number of training samples: {}'.format(table.shape[0]))
-print('Fitting scaler')
-get_scaler(table, out_dir)
+if num_outputs > 0:
+    print('Fitting scaler')
+    get_scaler(table, out_dir)
 print("Saving table")
 table.to_feather(os.path.join(out_dir, f"full.feather"))
 

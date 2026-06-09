@@ -54,7 +54,6 @@ def conv_tower(x,tower_poolsize,conv_tower_num,dim,pooling_type='max'):
         x=convolution_block(x_forres,filter_num, size = 1, activation=True)
         x=residual_block(x,x_forres)
         x=pooling_module(pool_size=tower_poolsize, kind=pooling_type)(x)
-        print(x.shape)
     return x
 
 def mlp(x,dim,dropout_rate=0.3):
