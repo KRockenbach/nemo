@@ -45,7 +45,7 @@ plot_scatter <- function(organism){
 
   
   initial <- strsplit(organism, split="")[[1]][1]
-  path <- paste0("../results/nemo/",organism,"/masked_graphpart/nemo",initial,"_preds/concat_preds.tsv")
+  path <- paste0("../result_subset/nemo/",organism,"/masked_graphpart/nemo",initial,"_preds/concat_preds.tsv")
   df <- read.table(path, header=T, sep="\t")
   
   x <- df$Actual
@@ -88,13 +88,13 @@ plot_scatter <- function(organism){
   buffer <- median(abs(err))
   polygon(x=c(q1, q1, q3, q3),
           y=c(q1-buffer, q1+buffer, q3+buffer, q3-buffer),
-          col=transparent("purple",0.65), border="purple")
+          col=transparent("purple", alpha=0.35), border="purple")
   polygon(x=c(min(x)-0.05, min(x)-0.05, q1, q1),
           y=c(min(x)-0.05-buffer, min(x)-0.05+buffer, q1+buffer, q1-buffer),
-          col=transparent("blue",0.65), border="blue")
+          col=transparent("blue", alpha=0.35), border="blue")
   polygon(x=c(q3, q3, max(x)+0.05, max(x)+0.05),
           y=c(q3-buffer, q3+buffer, max(x)+0.05+buffer, max(x)+0.05-buffer),
-          col=transparent("red",0.65), border="red")
+          col=transparent("red", alpha=0.35), border="red")
   
   
   
@@ -102,9 +102,9 @@ plot_scatter <- function(organism){
   par(mar=c(0,3,1,1), xpd=F)
 
   boxplot(df$Actual, type="n", axes=F, ylab="", xlab="", horizontal=T, ylim=c(-1,4))
-  polygon(x=c(min(df$Actual)-0.05, min(df$Actual)-0.05, q1, q1), y=c(0,2,2,0), col=transparent("blue", 0.8), border=NA)
-  polygon(x=c(q1, q1, q3, q3), y=c(0,2,2,0), col=transparent("purple", 0.8), border=NA)
-  polygon(x=c(q3, q3, max(df$Actual)+0.05, max(df$Actual)+0.05), y=c(0,2,2,0), col=transparent("red", 0.8), border=NA)
+  polygon(x=c(min(df$Actual)-0.05, min(df$Actual)-0.05, q1, q1), y=c(0,2,2,0), col=transparent("blue", alpha=0.2), border=NA)
+  polygon(x=c(q1, q1, q3, q3), y=c(0,2,2,0), col=transparent("purple", 0.2), border=NA)
+  polygon(x=c(q3, q3, max(df$Actual)+0.05, max(df$Actual)+0.05), y=c(0,2,2,0), col=transparent("red", alpha=0.2), border=NA)
   boxplot(df$Actual, axes=F, ylab="", xlab="", add=T, horizontal=T, col=NA)
   if (organism == "Bnapus"){
     fig_label(expression(bold("A")), cex=fig_lab_cex) 
@@ -115,8 +115,8 @@ plot_scatter <- function(organism){
 
 plot_importance <-function(organism){
   initial <- strsplit(organism, split="")[[1]][1]
-  p_path <- paste0("../results/nemo/",organism,"/masked_graphpart/attribs/promoter_expression_importance.tsv")
-  t_path <- paste0("../results/nemo/",organism,"/masked_graphpart/attribs/terminator_expression_importance.tsv")
+  p_path <- paste0("../result_subset/nemo/",organism,"/masked_graphpart/attribs/promoter_expression_importance.tsv")
+  t_path <- paste0("../result_subset/nemo/",organism,"/masked_graphpart/attribs/terminator_expression_importance.tsv")
   pdf <- read.table(p_path, header=T, sep="\t")
   tdf <- read.table(t_path, header=T, sep="\t")
   for(c in c("high_expr_ids", "low_expr_ids", "medium_expr_ids")){
@@ -143,7 +143,7 @@ plot_importance <-function(organism){
   lines(x=pdf$position, pdf$high_expr_ids, col="red", lwd=2)
   lines(x=pdf$position, pdf$medium_expr_ids, col="purple", lwd=2)
   lines(x=pdf$position, pdf$low_expr_ids, col="blue", lwd=2)
-  lines(x=c(0,0), y=c(0,0.015), lwd=2, lty=2, col=transparent("grey30",0.5))
+  lines(x=c(0,0), y=c(0,0.015), lwd=2, lty=2, col=transparent("grey30", alpha=0.5))
   
   par(mar=c(4,2,2,2.2))
   plot(y=rep(0,6201),
@@ -157,12 +157,12 @@ plot_importance <-function(organism){
   lines(x=tdf$position, tdf$high_expr_ids, col="red", lwd=2)
   lines(x=tdf$position, tdf$medium_expr_ids, col="purple", lwd=2)
   lines(x=tdf$position, tdf$low_expr_ids, col="blue", lwd=2)
-  lines(x=c(0,0), y=c(0,0.015), lwd=2, lty=2, col=transparent("grey30",0.5))
+  lines(x=c(0,0), y=c(0,0.015), lwd=2, lty=2, col=transparent("grey30", alpha=0.5))
 } 
 
 
 
-png("fig_3.png", height=14, width=17, res=1200, units="cm")
+pdf("fig_4.pdf", height=14, width=17, pointsize=30)
 layout(matrix(c(2,3,4,
                 1,3,4,
                 6,7,8,

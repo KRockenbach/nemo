@@ -32,7 +32,7 @@ source("./plot_utils.R")
 
 fig_lab_cex=1.5
 
-png("fig_1.png", width=17, height=18, units="cm", res=1200)
+pdf("fig_1.pdf", width=17, height=18, pointsize=30)#, units="cm", res=1200)
 
 par(mar=c(0,0,0,0), oma=c(0,0,0,0))
 
@@ -61,8 +61,8 @@ lines(x=c(TTS-2.5, TTS+2.5), y=c(99, 99), lwd=2)
 text(x=c(TTS-25,TTS,TTS+25), y=c(100,105,100), labels = c("-1.2 kb", "TTS", "+5 kb"), cex=0.65, adj=0.5, font=2)
 
 
-polygon(x=c(190, 210, 210, 190), y=c(top-30, top-30, top-347, top-347), col=transparent("darkorange4", 0.85), border=NA)
-polygon(x=c(170, 230, 200), y=c(top-347, top-347, top-380), col=transparent("darkorange4", 0.85), border=NA)
+polygon(x=c(190, 210, 210, 190), y=c(top-30, top-30, top-347, top-347), col=transparent("darkorange4", alpha=0.15), border=NA)
+polygon(x=c(170, 230, 200), y=c(top-347, top-347, top-380), col=transparent("darkorange4", alpha=0.15), border=NA)
 
 
 n <- 15
@@ -163,15 +163,15 @@ draw_array(vert=top-243, height=15.2, width=widths[8])
 draw_array(vert=top-263, height=15.2, width=widths[9], color="lightblue", border="navy")
 
 
-text(x=(lc-55), y=(top-49.4), labels="6200✕288", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-82-(10.6/2)), labels="6200✕106", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-130-(10.6/2)), labels="414✕106", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-163-(22.7/2)), labels="414✕227", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-193-(18.7/2)), labels="414✕187", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-216-(6.4/2)), labels="414✕64", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-228-(6.4/2)), labels="32✕64", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-243-(15.2/2)), labels="32✕152", col="grey60", cex=0.65)
-text(x=(lc-55), y=(top-263-(15.2/2)), labels="6✕152", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-49.4), labels="6200 x 288", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-82-(10.6/2)), labels="6200 x 106", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-130-(10.6/2)), labels="414 x 106", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-163-(22.7/2)), labels="414 x 227", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-193-(18.7/2)), labels="414 x 187", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-216-(6.4/2)), labels="414 x 64", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-228-(6.4/2)), labels="32 x 64", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-243-(15.2/2)), labels="32 x 152", col="grey60", cex=0.65)
+text(x=(lc-55), y=(top-263-(15.2/2)), labels="6 x 152", col="grey60", cex=0.65)
 
 
 #terminator branch 
@@ -206,15 +206,15 @@ draw_array(horiz=rc, vert=top-228, height=10.5, width=widths[7], color="lightblu
 draw_array(horiz=rc, vert=top-243, height=15.2, width=widths[8])
 draw_array(horiz=rc, vert=top-263, height=15.2, width=widths[9], color="lightblue", border="navy")
 
-text(x=(rc+55), y=(top-35-(21.9/2)), labels="6200✕219", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-63-(44.9/2)), labels="6200✕449", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-113-(44.9/2)), labels="414✕449", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-163-(25.9/2)), labels="414✕259", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-193-(15.4/2)), labels="414✕154", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-213-(10.5/2)), labels="414✕105", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-228-(10.5/2)), labels="32✕105", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-243-(15.2/2)), labels="32✕152", col="grey60", cex=0.65)
-text(x=(rc+55), y=(top-263-(15.2/2)), labels="6✕152", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-35-(21.9/2)), labels="6200 x 219", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-63-(44.9/2)), labels="6200 x 449", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-113-(44.9/2)), labels="414 x 449", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-163-(25.9/2)), labels="414 x 259", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-193-(15.4/2)), labels="414 x 154", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-213-(10.5/2)), labels="414 x 105", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-228-(10.5/2)), labels="32 x 105", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-243-(15.2/2)), labels="32 x 152", col="grey60", cex=0.65)
+text(x=(rc+55), y=(top-263-(15.2/2)), labels="6 x 152", col="grey60", cex=0.65)
 
 
 
@@ -259,23 +259,28 @@ polygon(x=c(200-(182.4/2), 200-(182.4/2), 200+(182.4/2), 200+(182.4/2)), y=c(tex
 
 text(x=(lc-55), y=(text_vert[9]-12), labels="1824", col="grey60", cex=0.65)
 
-for (i in seq(200-(182.4/2)+0.05, 200+(182.4/2)-0.05, 0.1)){
-  for (j in seq(200-128, 200-8, 8)){
-    lines(x=c(i,j), y=c(text_vert[9]-12.1, text_vert[9]-30), lwd=1, col=transparent("black", 0.996))
-  }
-  for (j in seq(200+128, 200+8, -8)){
-    lines(x=c(i,j), y=c(text_vert[9]-12.1, text_vert[9]-30), lwd=1, col=transparent("black", 0.996))
-  }
+
+
+xl <- 200-(182.4/2)+0.05
+xr <- 200+(182.4/2)-0.05
+
+for (j in seq(200-128, 200-8, 8)){
+  polygon(x=c(xl,xr,j), y=c(text_vert[9]-12.1, text_vert[9]-12.1, text_vert[9]-30), border=NA, col=transparent("black", alpha=0.05))
 }
+for (j in seq(200+128, 200+8, -8)){
+  polygon(x=c(xl,xr,j), y=c(text_vert[9]-12.1, text_vert[9]-12.1, text_vert[9]-30), border=NA, col=transparent("black", alpha=0.05))
+}
+##################################################
+
 
 for (i in seq(200-128, 200-8, 8)){
   for (j in c(200-8, 200, 200+8)){
-    lines(x=c(i,j), y=c(text_vert[9]-30, text_vert[9]-60), lwd=1, col=transparent("grey30", 0.5))
+    lines(x=c(i,j), y=c(text_vert[9]-30, text_vert[9]-60), lwd=1, col=transparent("grey30", alpha=0.5))
   }
 }
 for (i in seq(200+128, 200+8, -8)){
   for (j in c(200-8, 200, 200+8)){
-    lines(x=c(i,j), y=c(text_vert[9]-30, text_vert[9]-60), lwd=1, col=transparent("grey30", 0.5))
+    lines(x=c(i,j), y=c(text_vert[9]-30, text_vert[9]-60), lwd=1, col=transparent("grey30", alpha=0.5))
   }
 }
 

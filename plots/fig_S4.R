@@ -29,7 +29,7 @@
 
 source("plot_utils.R")
 
-png("fig_S4.png", width=17, height=8, units="cm", res=1200)
+png("supp_figs/fig_S4.png", width=17, height=8, units="cm", res=1200)
 
 par(mfrow=c(1,2), mar=c(0,0,0,0), oma=c(0,0,0,0))
 
@@ -37,7 +37,7 @@ fig_lab_cex=1.5
 
 # A
 
-df <- read.table("../results/nemo/Bnapus/masked_graphpart_Bn/logs/lr_log_412_53543_t_0_v_1.csv",
+df <- read.table("../result_subset/nemo/Bnapus/masked_graphpart_Bn/logs/lr_log_412_53543_t_0_v_1.csv",
                  header=T, sep="\t")
 
 steps_per_epoch = 412
@@ -75,7 +75,7 @@ fig_label(expression(bold("A")), cex=fig_lab_cex)
 
 # B
 
-df <- read.table("../results/nemo/Bnapus/masked_graphpart_Bn/logs/trainlog_t_0_v_1.csv",
+df <- read.table("../result_subset/nemo/Bnapus/masked_graphpart_Bn/logs/trainlog_t_0_v_1.csv",
                  header=T, sep="\t")
 
 df$epoch <- df$epoch + 1

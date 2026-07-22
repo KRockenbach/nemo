@@ -29,7 +29,7 @@
 
 source("./plot_utils.R")
 
-png("fig_2.png", width=17, height=17, units="cm", res=1200)
+pdf("fig_2.pdf", width=17, height=17, pointsize=30)
 
 lab_cex=1
 ax_cex=0.9
@@ -46,43 +46,61 @@ layout(
 
 
 # 2A
-df = read.table("../results/rsq_df.tsv", header=T, sep="\t")
+df = read.table("../result_subset/rsq_df.tsv", header=T, sep="\t")
 sub=df[df$partitioning=="graphpart_Bn",]
 sub$model[is.na(sub$valid_fold)] <- "nemo90"
+model_names <- c("nemo90", "nemo", "xpresso",
+                 "PhytoExpr_CNN", "Basenji-5K", 
+                 "xpresso_no_halflife", "PhytoExpr_transformer")
+nm <- length(model_names)
 par(mar=c(5,4,3,0), mgp=c(1.4,0.4,0), tck=-0.03, xpd=T)
-plot(x=c(0.5:5.5), y=c(min(sub$rsq), rep(max(sub$rsq),5)), 
+plot(x=c(0.5:(nm+0.5)), y=c(min(sub$rsq), rep(max(sub$rsq),nm)), 
      ylab=expression("Performance on"~italic("B. napus")~"Test Set (r"^2*")"),
      xlab="", cex.lab=lab_cex, cex.axis = ax_cex, type="n", axes=F)
-model_names <- c("nemo90", "nemo", "nemo_rand_prom", "nemo_rand_term", "xpresso")
-for (m in 1:5){
+for (m in 1:nm){
   model <- model_names[m]
-  boxplot(sub$rsq[sub$model==model], at=m, add=T, axes=F)
+  rsq <- sub$rsq[sub$model==model & sub$tpm_type=="median"]
+  boxplot(rsq, at=m, add=T, axes=F,
+          col=transparent("blue", alpha=0.1), border="navyblue")
+  med_rsq <- as.character(round(median(rsq),2))
+  text(x=m, y=(median(rsq)-0.04), labels=as.character(med_rsq), cex=0.75, col="navyblue")
+  rsq <- sub$rsq[sub$model==model & sub$tpm_type=="max"]
+  boxplot(rsq, at=m, add=T, axes=F, 
+          col=transparent("red", alpha=0.1), border="maroon4")
+  med_rsq <- as.character(round(median(rsq),2))
+  text(x=m, y=(median(rsq)-0.04), labels=as.character(med_rsq), cex=0.75, col="maroon4")
 }
 
-axis(side=2, at=seq(0.05, 0.55, 0.05))
-text(x=c(1:5), y=0.58, labels=rep("N = 10", 4), col="grey70")
-for (m in 1:5){
-  model <- model_names[m]
-  med_rsq <- as.character(round(median(sub$rsq[sub$model==model]),2))
-  text(x=m, y=0.3, labels=bquote("Q"[2]~"="~.(med_rsq)), cex=0.75, col="grey30")
-}
+axis(side=2, at=seq(0.15, (0.55), 0.05))
 
-text(x=1, y=-0.0375, labels=expression(italic("n")*"emo"["90"]), cex=0.8)
-text(x=2, y=-0.0375, labels=expression(italic("n")*"emo"["80"]), cex=0.8)
-Lines <- list(bquote(italic("n")*"emo"["80"]),bquote("with"),bquote("Randomized"),bquote("Promoter"))
-text(x=3, y=c(0, -0.025,-0.05,-0.075), labels=do.call(expression, Lines), cex=0.8)
-Lines <- list(bquote(italic("n")*"emo"["80"]),bquote("with"),bquote("Randomized"),bquote("Terminator"))
-text(x=4, y=c(0, -0.025,-0.05,-0.075), labels=do.call(expression, Lines), cex=0.8)
-text(x=5, y=-0.0375, labels="Xpresso", cex=0.8)
+text(x=1, y=0, labels=expression(italic("n")*"emo"["90"]), cex=0.8, srt=-60)
+text(x=2, y=0, labels=expression(italic("n")*"emo"["80"]), cex=0.8, srt=-60)
+
+text(x=3, y=0, labels="Xpresso", cex=0.8, srt=-60)
+Lines <- list(bquote("PhytoExpr"),bquote("ensemble"))
+text(x=c(4.1,3.9), y=c(0.005,-0.005), labels=do.call(expression, Lines), cex=0.8, srt=-60)
+text(x=5, y=0, labels="Basenji-5K", cex=0.8, srt=-60)
+Lines <- list(bquote("Xpresso"),bquote("without"),bquote("halflife features"))
+text(x=c(6.2,6,5.8), y=c(0.01, 0,-0.01), labels=do.call(expression, Lines), cex=0.8, srt=-60)
+Lines <- list(bquote("PhytoExpr"),bquote("transformer"))
+text(x=c(7.1, 6.9), y=c(0.005, -0.005), labels=do.call(expression, Lines), cex=0.8, srt=-60)
+
+legend("topright", fill=c(transparent("blue", alpha=0.1),
+                          transparent("red", alpha=0.1)), 
+       border=c("navyblue","maroon4"), 
+       legend=c("median expression", "maximum expression"), 
+       bty="n", cex=0.7)
+
+text(x=4, y=0.56, labels="N = 10", 
+     col="grey70", cex=0.85)
 
 fig_label(expression(bold("A")), cex=fig_lab_cex)
 
 
 
-
 # 2B
 
-df = read.table("../results/rsq_df.tsv", header=T, sep="\t")
+df = read.table("../result_subset/rsq_df.tsv", header=T, sep="\t")
 
 sub=df[df$masking=="masked" & df$partitioning=="graphpart" & df$test_organism %in% c("Athaliana", "BnapusDS"), ]
 cols=c("seagreen2","yellow")
@@ -99,11 +117,12 @@ boxplot(tr_At_te_At, col="seagreen2", at=1.2, boxwex=0.5, border="darkgreen", ad
 boxplot(tr_At_te_Bn, col="yellow", at=1.8, boxwex=0.5, border="gold4", add=T, frame=F, axes=F)
 boxplot(tr_Bn_te_At, col="seagreen2", at=3.2, boxwex=0.5, border="darkgreen", add=T, frame=F, axes=F)
 boxplot(tr_Bn_te_Bn, col="yellow", at=3.8, boxwex=0.5, border="gold4", add=T, frame=F, axes=F)
-Lines <- list(bquote("Q"[2]~"="~.(round(median(tr_At_te_At),2))),
-              bquote("Q"[2]~"="~.(round(median(tr_At_te_Bn),2))),
-              bquote("Q"[2]~"="~.(round(median(tr_Bn_te_At),2))),
-              bquote("Q"[2]~"="~.(round(median(tr_Bn_te_Bn),2))))
-text(x=c(1.2,1.8,3.2,3.8), y=0.33, labels=do.call(expression, Lines), cex=0.75, col="grey30")
+
+
+text(x=c(0.9,2.1,2.9,4.1), y=c(median(tr_At_te_At), median(tr_At_te_Bn), median(tr_Bn_te_At), median(tr_Bn_te_Bn)), 
+     labels=as.character(c(round(median(tr_At_te_At),2), round(median(tr_At_te_Bn),2), round(median(tr_Bn_te_At),2), round(median(tr_Bn_te_Bn),2))), 
+     cex=0.75, col=c("darkgreen","gold4", "darkgreen", "gold4"))
+
 
 axis(1, at=c(1.5, 3.5),
      labels=c(expression(italic("A. thaliana")),
@@ -153,10 +172,12 @@ for (p in p_vals){
     labs <- c(labs,"ns")
   }
 }
-text(x=c(1.5, 3.5), y=c(0.515,0.62), labels=labs, 
+
+text(x=c(1.5, 3.5), y=c(mean(c(median(tr_At_te_At), median(tr_At_te_Bn))),mean(c(median(tr_Bn_te_At), median(tr_Bn_te_Bn)))), labels=labs, 
      col="grey40", cex=0.85)
-text(x=c(1.2,1.8,3.2,3.8), y=rep(0.7,4), labels=rep("N = 10", 4), 
-     col="grey70")#, cex=0.85)
+
+text(x=2.5, y=0.61, labels="N = 10", 
+     col="grey70", cex=0.85)
 
 fig_label(expression(bold("B")), cex=fig_lab_cex)
 
@@ -166,7 +187,7 @@ fig_label(expression(bold("B")), cex=fig_lab_cex)
 #  2C
 
 # Bnapus concatenated
-path <- "../results/nemo/Bnapus/masked_graphpart/nemoB_preds/concat_preds.tsv"
+path <- "../result_subset/nemo/Bnapus/masked_graphpart/nemoB_preds/concat_preds.tsv"
 df <- read.table(path, sep="\t", header=T)
 # Gaussian KDE
 df$Density <- get_density(df$Actual, df$Predicted, n = 100, h = c(1, 1))
@@ -233,7 +254,7 @@ lines(x=c(0,dy$y)-0.1, y=c(min(df$Predicted),dy$x))
 # Athaliana concatenated
 # TRAINED AND TESTED ON ATHALIANA
 
-path <- "../results/nemo/Athaliana/masked_graphpart/nemoA_preds/concat_preds.tsv"
+path <- "../result_subset/nemo/Athaliana/masked_graphpart/nemoA_preds/concat_preds.tsv"
 df <- read.table(path, sep="\t", header=T)
 # Gaussian KDE
 df$Density <- get_density(df$Actual, df$Predicted, n = 100, h = c(1, 1))

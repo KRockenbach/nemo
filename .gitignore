@@ -9,6 +9,7 @@ result*/
 unpack.sh
 validation/
 scripts/*tmp*
+obsolete/
 
 */__pycache__/
 

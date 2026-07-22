@@ -25,11 +25,10 @@
 # SOFTWARE.
 #
 ##################################################################################
-
-
 package_dir <- "~/R/nemo_plotting_packages/"
-dependencies <- c("data.table", "pracma", "stringr", "viridis", "yarrr", "stringi", 
+dependencies <- c("pracma", "stringr", "viridis", "stringi", 
                   "MASS", "gsignal", "wesanderson", "scico", "hash")
+
 for (lib in dependencies){ 
     if(!require(lib, character.only = TRUE)){
         dir.create(package_dir, recursive = TRUE, showWarnings = FALSE)  # create personal library
@@ -47,6 +46,29 @@ get_density <- function(x, y, ...) {
   return(density$z[i_xy])
 }
 
+
+# Source - https://stackoverflow.com/a/20796068
+# Posted by Ricardo Oliveros-Ramos, modified by community. See post 'Timeline' for change history
+# Retrieved 2026-02-22, License - CC BY-SA 3.0
+
+transparent = function(..., alpha=0.5) {
+  
+  if(alpha<0 | alpha>1) stop("alpha must be between 0 and 1")
+  
+  alpha = floor(255*alpha)  
+  newColor = col2rgb(col=unlist(list(...)), alpha=FALSE)
+  
+  .transparent = function(col, alpha) {
+    rgb(red=col[1], green=col[2], blue=col[3], alpha=alpha, maxColorValue=255)
+  }
+  
+  newColor = apply(newColor, 2, .transparent, alpha=alpha)
+  
+  return(newColor)
+  
+}
+
+
 #####################################################
 #####################################################
 
@@ -59,13 +81,18 @@ get_tau <- function(x){
 #####################################################
 #####################################################
 
-min_max.zero_center.scale <- function(x){
-  to_return <- x/max(abs(x)) 
+min_max.zero_center.scale <- function(x, min_max=NULL){
+  if (is.null(min_max)){
+    to_return <- x/max(abs(x)) 
+  } else {
+    to_return <- x/max(abs(min_max))
+  }
   return(to_return)
 }
 
 min_max.positive.scale <- function(x){
-  to_return <- (x-min(x))/(max(x)-min(x)) 
+  to_return <- (x-min(x))/(max(x)-min(x))
+  to_return[is.na(to_return)] <- 0
   return(to_return)
 }
 
@@ -99,6 +126,11 @@ get_colors <- function(x, palette="viridis"){
         g <- 1 - abs(x[i])^(0.88)#(x[i])^2
         b <- 1
       }
+      if (r < 0 | g < 0 | b < 0){
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~")
+        print(c(r,g,b))
+        print(x[i])
+      }
       colors[i] <- rgb(red=r, green=g, blue=b)
     }
   } else {  
@@ -115,6 +147,7 @@ grey_scale <- function(x){
   cols <- grey.colors(n=1000, start=0.0, end=0.95)[idx]
   return(cols)
 }
+
 
 #####################################################
 #####################################################
