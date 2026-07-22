@@ -93,7 +93,7 @@ elif to_bool(config['use_promoter']) and not to_bool(config['use_terminator']):
 elif to_bool(config['use_terminator']) and not to_bool(config['use_promoter']):
     test = get_set(config, outT=outT, inT=inT,
                    datadir=folddir, set='test', test_fold=test_fold, valid_fold=valid_fold)
-
+test["output"] = test["output"][:,2] # median expression
 gene_names = translate_IDs(test['ID'], datadir=datadir)
 
 inputs = []
