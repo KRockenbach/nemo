@@ -29,13 +29,13 @@
 
 #========================================================================================================
 #title: motif_insertion_pipeline.sh
-#description: Inserts motifs of the repsective TF families into 100 random promoter or terminator sequences,
+#description: Inserts motifs of the repsective TF families, as well as control sequences (scrambled, reversed, random) into semi-randomly selected promoter or terminator sequences,
 #             generates a data frame containing info on the gene, the motif and the location of insertion,
 #             as well as the baseline prediction and new prediction after insertion
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-03-09
+#version: 2.0.0
 #usage: bash motif_insertion_pipeline.sh
 #notes: commented links are temporary links and will not work (see filtering criteria)
 #=========================================================================================================>
@@ -105,19 +105,9 @@ for FAMILY in C2C2gata G2like NAC Trihelix bHLH MADS MYB bZIP TCP WRKY C2C2dof H
 do
   At_ID_PATH=$(ls ../data/Athaliana/parent_data/TF_ids/* | grep "${FAMILY}\.")
   Bn_ID_PATH=$(ls ../data/Bnapus/parent_data/TF_ids/* | grep "${FAMILY}\.")
-  #CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" --expr "all" & pid1=$!
-  #CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" --expr "all" & pid2=$!
-  #wait $pid1 $pid2
-  for EXPR in "medium" #"high" "low"
-  do
-    CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" --expr $EXPR & pid1=$!
-    CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" --expr $EXPR & pid2=$!
-    wait $pid1 $pid2
-  done
-  CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo_full" --expr "medium" & pid1=$!
-  CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo_full" --expr "medium" & pid2=$!
+  CUDA_VISIBLE_DEVICES=0 python -m nemo.mutation.mutate_sequences -o Athaliana -a $At_ID_PATH -f $FAMILY --m "nemo" --expr "medium" & pid1=$!
+  CUDA_VISIBLE_DEVICES=1 python -m nemo.mutation.mutate_sequences -o Bnapus -a $Bn_ID_PATH -f $FAMILY -m "nemo" --expr "medium" & pid2=$!
   wait $pid1 $pid2
 done
-
 
 mamba deactivate

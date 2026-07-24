@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 ##################################################################################
@@ -32,8 +33,8 @@
 #description: Creates prediction sets from trained models, calculates and aggregates performances and classifies genes based on expression and prediction
 #author: Kevin Rockenbach
 #email: kevin.rockenbach@ag.uni-giessen.de
-#date: 2025-08-28
-#version: 1.0.0
+#date: 2026-05-07
+#version: 1.1.0
 #usage: bash eval.sh
 #=========================================================================================================
 
@@ -49,18 +50,18 @@ echo -e "model\ttest_organism\tmasking\tpartitioning\ttrain_organism\ttest_fold\
 
 # perfomance evaluation
 # models parallelized
-#ORGANISM="Bnapus"
-#MASKING="masked"
-#PARTITIONING="graphpart_Bn"
-#FOLDDIR=${ROOT}"/data/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"_fold_data"
-#for MODEL in nemo # xpresso xpresso_no_halflife Basenji-5K PhytoExpr_CNN PhytoExpr_transformer
-#do
-#    for OUTPUT in "median" "max"
-#    do
-#        WEIGHTDIR=${ROOT}"/model_weights/"${MODEL}"/Bnapus/masked_graphpart_Bn"
-#        CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$FOLDDIR" "$WEIGHTDIR" "$OUTPUT"
-#    done
-#done
+ORGANISM="Bnapus"
+MASKING="masked"
+PARTITIONING="graphpart_Bn"
+FOLDDIR=${ROOT}"/data/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"_fold_data"
+for MODEL in nemo xpresso xpresso_no_halflife Basenji-5K PhytoExpr_CNN PhytoExpr_transformer
+do
+    for OUTPUT in "median" "max"
+    do
+        WEIGHTDIR=${ROOT}"/model_weights/"${MODEL}"/Bnapus/masked_graphpart_Bn"
+        CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$FOLDDIR" "$WEIGHTDIR" "$OUTPUT"
+    done
+done
 
 
 for MODEL in "nemo" "xpresso" "xpresso_no_halflife" "Basenji-5K" "PhytoExpr_CNN" "PhytoExpr_transformer"
@@ -73,31 +74,31 @@ do
 done
 
 
-### performance comparisons w.r.t. masking and paritioning (only Bnapus)
-## partitioning parallelized
-#for MASKING in "clear" "masked" "only_cds"
-#do
-#  GP_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_graphpart_fold_data"
-#  RD_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_random_fold_data"
-#  GP_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_graphpart"
-#  RD_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_random"
-#  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$GP_TESTDIR" "$GP_WEIGHTDIR" & pid1=$!
-#  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$RD_TESTDIR" "$RD_WEIGHTDIR" & pid2=$!
-#  wait $pid1 $pid2
-#done
+# performance comparisons w.r.t. masking and paritioning (only Bnapus)
+# partitioning parallelized
+for MASKING in "clear" "masked" "only_cds"
+do
+  GP_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_graphpart_fold_data"
+  RD_TESTDIR=${ROOT}"/data/Bnapus/"${MASKING}"_random_fold_data"
+  GP_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_graphpart"
+  RD_WEIGHTDIR=${ROOT}"/model_weights/nemo/Bnapus/"${MASKING}"_random"
+  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$GP_TESTDIR" "$GP_WEIGHTDIR" & pid1=$!
+  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$RD_TESTDIR" "$RD_WEIGHTDIR" & pid2=$!
+  wait $pid1 $pid2
+done
 
 
-### cross-species comparisons
-## test organism parallelized
+# cross-species comparisons
+# test organism parallelized
 for MODELORG in "Bnapus" "Athaliana"
 do
-  # Bnapus test set downsampled to size of Athaliana test sets
-#  Bn_TESTDIR=${ROOT}"/data/Bnapus/masked_graphpartDS_fold_data"
-#  At_TESTDIR=${ROOT}"/data/Athaliana/masked_graphpart_fold_data"
-#  WEIGHTDIR=${ROOT}"/model_weights/nemo/"${MODELORG}"/masked_graphpart"
-#  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$Bn_TESTDIR" "$WEIGHTDIR" & pid1=$!
-#  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$At_TESTDIR" "$WEIGHTDIR" & pid2=$!
-#  wait $pid1 $pid2
+  Bnapus test set downsampled to size of Athaliana test sets
+  Bn_TESTDIR=${ROOT}"/data/Bnapus/masked_graphpartDS_fold_data"
+  At_TESTDIR=${ROOT}"/data/Athaliana/masked_graphpart_fold_data"
+  WEIGHTDIR=${ROOT}"/model_weights/nemo/"${MODELORG}"/masked_graphpart"
+  CUDA_VISIBLE_DEVICES=0 python3 -m nemo.eval.eval "$Bn_TESTDIR" "$WEIGHTDIR" & pid1=$!
+  CUDA_VISIBLE_DEVICES=1 python3 -m nemo.eval.eval "$At_TESTDIR" "$WEIGHTDIR" & pid2=$!
+  wait $pid1 $pid2
 
   for TESTORG in "Bnapus" "Athaliana"
   do
@@ -117,23 +118,23 @@ do
   done
 done
 
-### classify based on expression, specificity and prediction
-#for ORGANISM in "Bnapus" "Athaliana"
-#do
-#  EXPRESSION=${ROOT}"/data/"${ORGANISM}"/derived_data/expr_matrix.tsv"
-#  MODEL="nemo"
-#  PARTITIONING="graphpart"
-#  MASKING="masked"
-#  INITIAL=$(echo $ORGANISM | head -c 1)
-#  PREDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/"${MODEL}${INITIAL}"_preds"
+# classify based on expression, specificity and prediction
+for ORGANISM in "Bnapus" "Athaliana"
+do
+  EXPRESSION=${ROOT}"/data/"${ORGANISM}"/derived_data/expr_matrix.tsv"
+  MODEL="nemo"
+  PARTITIONING="graphpart"
+  MASKING="masked"
+  INITIAL=$(echo $ORGANISM | head -c 1)
+  PREDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/"${MODEL}${INITIAL}"_preds"
 
-#  bash nemo/eval/cat_preds.sh $PREDDIR
-#  EXPR_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/expression"
-#  SPEC_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/specificity"
-#  PRED_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/prediction"
-#  Rscript nemo/eval/over_under_pred.R $PREDDIR $PRED_IDDIR
-#  Rscript nemo/eval/get_expression_class_lists.R $PREDDIR $EXPR_IDDIR
-#  Rscript nemo/eval/get_specificity_class_lists.R $EXPRESSION $SPEC_IDDIR
-#done
+  bash nemo/eval/cat_preds.sh $PREDDIR
+  EXPR_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/expression"
+  SPEC_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/specificity"
+  PRED_IDDIR=${ROOT}"/results/"${MODEL}"/"${ORGANISM}"/"${MASKING}"_"${PARTITIONING}"/IDs/prediction"
+  Rscript nemo/eval/over_under_pred.R $PREDDIR $PRED_IDDIR
+  Rscript nemo/eval/get_expression_class_lists.R $PREDDIR $EXPR_IDDIR
+  Rscript nemo/eval/get_specificity_class_lists.R $EXPRESSION $SPEC_IDDIR
+done
 
 mamba deactivate

@@ -7,9 +7,9 @@ do
 done
 
 
-#for dir in $(ls -d ../data/*/parent_data/TF* ../data/motifs ../data/plot_data)
-#do
-#  new=$(echo $dir | sed 's/data/data_subset/')
-#  mkdir -p $(dirname $new)
-#  cp -r $dir $new
-#done
+for dir in $(ls -d ../data/*/parent_data/TF* ../data/motifs ../data/plot_data)
+do
+  new=$(echo $dir | sed 's/data/data_subset/')
+  mkdir -p $(dirname $new)
+  cp -r $dir $new
+done

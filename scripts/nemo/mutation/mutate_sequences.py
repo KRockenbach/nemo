@@ -104,14 +104,14 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
         return mutated_list
 
 
-    mutated_seq_list = [] #
-    prom_list = [] #
-    term_list = [] #
-    rel_idx_lst = [] #
-    inserted_motif_lst = [] #
-    name_lst = [] #
-    motif_type_lst = [] #
-    motif_name_lst = [] #
+    mutated_seq_list = []
+    prom_list = []
+    term_list = []
+    rel_idx_lst = []
+    inserted_motif_lst = []
+    name_lst = []
+    motif_type_lst = []
+    motif_name_lst = []
 
 
     TSS = 5000
@@ -154,14 +154,14 @@ def insert_motifs(prom, term, names, ppm, motif_idx, motif_name, results):
     prom = np.concatenate(prom_list, axis=0)
     term = np.concatenate(term_list, axis=0)
 
-    del mutated_seq_list #
+    del mutated_seq_list
     del prom_list
     del term_list
-    del rel_idx_lst #
-    del inserted_motif_lst #
-    del name_lst #
-    del motif_type_lst #
-    del motif_name_lst #
+    del rel_idx_lst
+    del inserted_motif_lst
+    del name_lst
+    del motif_type_lst
+    del motif_name_lst
 
     return df, prom, term
 
@@ -262,7 +262,6 @@ def main():
     high_ID_path = f"../results/nemo/{args.organism}/masked_graphpart/IDs/expression/high_expr_ids.lst"
     medium_ID_path = f"../results/nemo/{args.organism}/masked_graphpart/IDs/expression/medium_expr_ids.lst"
     low_ID_path = f"../results/nemo/{args.organism}/masked_graphpart/IDs/expression/low_expr_ids.lst"
-    # TODO IMPORTANT! changed algorithm to take any gene from respective test fold into account, not just moderately expressed!
 
     outdir = os.path.join(results, "motif_insertion")
     os.makedirs(outdir, exist_ok=True)

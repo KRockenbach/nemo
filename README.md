@@ -1,20 +1,5 @@
-# Environment Setup
-Install [Mamba](https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html) to manage environments.  
-  
-Install GNU:parallel:
-```
-apt install parallel
-```
+# How to cite us
 
-Setup environments:  
-```
-CONDA_OVERRIDE_CUDA="11.8" mamba env create -f nemo.yaml
-mamba env create -f nemo_cpu.yaml
-mamba env create -f prep.yaml
-```
+Please cite as:
 
-
-
-# Reference
-Kevin C Rockenbach, Silvia F Zanini, Richard J Morris, Rachel Wells, Agnieszka A Golicz. A deep learning model recapitulates position specific effects of plant regulatory sequences and suggests genes under complex regulation  
-bioRxiv. (https://doi.org/10.1101/2025.08.30.673246)
+Kevin C Rockenbach, Silvia F Zanini, Alison C Tidy, Richard J Morris, Rachel Wells, Agnieszka A Golicz, A deep learning model captures position-specific effects of plant regulatory sequences and suggests genes under complex regulation, Plant Physiology, 2026;, kiag473, https://doi.org/10.1093/plphys/kiag473

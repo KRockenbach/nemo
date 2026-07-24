@@ -1,15 +1,9 @@
 scripts/nemo/hyperparam_tuning/expression_*
 scripts/nemo/attribution/gene_*
-model_configs/nemo2*
-model_configs/LR_range_test
-model_weights/
-data*/
 scripts/nemo/utils/one_cycle_scheduler_tf/
-result*/
-unpack.sh
-validation/
 scripts/*tmp*
 obsolete/
+set_scaler.py
 
 */__pycache__/
 

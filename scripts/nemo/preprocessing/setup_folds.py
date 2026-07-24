@@ -183,7 +183,6 @@ table = get_data(data_file)
 
 print(gp.split("/")[-1])
 if masking == "masked" and organism == "Bnapus" and gp.split("/")[-1] == "graphpart_result.csv":
-    print("hola?")
     Bn_gp = gp.replace(".csv", ".Bn.csv")
     Bn_graphpart = pd.read_table(Bn_gp, index_col=False, header=0, sep=',')
     Bn_out_dir=out_dir.replace("graphpart", "graphpart_Bn")

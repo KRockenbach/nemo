@@ -38,7 +38,7 @@
 #notes: To train in parallel device 1 is used for A. thaliana, device 0 used for B. napus
 #=========================================================================================================
 
-DEVICE=1
+DEVICE=0
 
 source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
 source ${CONDA_PREFIX}/etc/profile.d/conda.sh
