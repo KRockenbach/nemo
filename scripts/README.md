@@ -8,6 +8,7 @@ apt install parallel
 
 Setup environments:
 ```
+cd ../dev_envs
 mamba env create -f prep.yaml
 # for GPU support
 CONDA_OVERRIDE_CUDA="11.8" mamba env create -f ../envs/nemo.yaml

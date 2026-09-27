@@ -73,9 +73,9 @@ def randomize_sequence(seq, segment="upstream", first_downstream_pos=5000):
 
 
 def inverse_transform(z, scaler):
-        n_outputs=1
-        z=z.reshape(-1,n_outputs)
-        return (z*scaler.scale_[out_idx])+scaler.mean_[out_idx]
+    n_outputs=1
+    z = z.reshape(-1,n_outputs)
+    return (z*scaler.scale_[out_idx])+scaler.mean_[out_idx]
 
 
 gpu_devices = tf.config.experimental.list_physical_devices('GPU')

@@ -52,18 +52,13 @@ import random
 
 random.seed(1234)
 
-if len(sys.argv) > 3:
-    num_outputs = int(sys.argv[3])
-else:
-    num_outputs = 5
-
 ##################################################
 # AUXILLARY FUNCTION DEFINITIONS
 ##################################################
 
 ##################################################
 # get entire log-transformed data table (so that it can remain in memory)
-def get_data(data_file):
+def get_data(data_file, num_outputs):
     '''
     loads data merged data and log-transforms appropriate columns
     '''
@@ -86,7 +81,7 @@ def get_data(data_file):
 
 
 # get scaler and mapper for specific fold combination
-def get_scaler(train_table, out_dir):
+def get_scaler(train_table, out_dir, num_outputs):
     # expression data for current fold
     exp = train_table.iloc[:,0:num_outputs]
 
@@ -105,26 +100,31 @@ def get_scaler(train_table, out_dir):
 
 #######################################
 
+def setup(data_file, out_dir, num_outputs):
+    # create output directory
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
-#######################################
-# MAIN FUNCTION
-#######################################
-
-# import arguments
-data_file = sys.argv[1]
-out_dir = sys.argv[2]
-
-# create output directory
-if not os.path.exists(out_dir):
-    os.makedirs(out_dir)
+    table = get_data(data_file, num_outputs)
+    # fit scaler and mapper
+    print('Total Number of training samples: {}'.format(table.shape[0]))
+    if num_outputs > 0:
+        print('Fitting scaler')
+        get_scaler(table, out_dir, num_outputs)
+    print("Saving table")
+    table.to_feather(os.path.join(out_dir, f"full.feather"))
 
 
-table = get_data(data_file)
-# fit scaler and mapper
-print('Total Number of training samples: {}'.format(table.shape[0]))
-if num_outputs > 0:
-    print('Fitting scaler')
-    get_scaler(table, out_dir)
-print("Saving table")
-table.to_feather(os.path.join(out_dir, f"full.feather"))
+if __name__ == "__main__":
+    #######################################
+    # MAIN FUNCTION
+    #######################################
+    if len(sys.argv) > 3:
+        num_outputs = int(sys.argv[3])
+    else:
+        num_outputs = 5
 
+    # import arguments
+    data_file = sys.argv[1]
+    out_dir = sys.argv[2]
+    setup(data_file, out_dir, num_outputs)

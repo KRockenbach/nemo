@@ -46,11 +46,12 @@ source $CONDA_PREFIX/etc/profile.d/conda.sh
 
 GFF=../validation/ZS11/zs11.genome.noScaf.gff
 FASTA=../validation/ZS11/zs11.genome.fa
+mamba activate prep
 ./prep --gff=$GFF --fasta=$FASTA --outdir=../validation/ZS11/data
-
+mamba deactivate
 ## Bnapus ZS11 predictions
 
-CUDA_VISIBLE_DEVICES=0 python nemo/predict.py ../validation/ZS11/data
+CUDA_VISIBLE_DEVICES=0 python nemo/validation.py ../validation/ZS11/data
 
 
 ## Athaliana setup
@@ -63,7 +64,7 @@ mkdir -p $GATC
 
 GFF=../data/Athaliana/parent_data/TAIR10_GFF3_genes.gff
 
-
+mamba activate prep
 LIST=${VAL}/genes.eQTL.txt
 for FASTA in ${VAL}/*.fa
 do
@@ -108,7 +109,7 @@ do
     ./prep --gff=$GFF --fasta=$FASTA --outdir=$OUTDIR --genelist=$LIST
   fi
 done
-
+mamba deactivate
 
 #### Athaliana predictions
 
@@ -129,18 +130,18 @@ for fasta in $(cat ../validation/Athaliana/genomes_set1.txt)
 do
     name=$(basename $fasta .chr.fa)
     dir=../validation/Athaliana/data/eQTL/$name
-    CUDA_VISIBLE_DEVICES=0 python nemo/predict.py $dir $modelfile
+    CUDA_VISIBLE_DEVICES=0 python nemo/validation.py $dir $modelfile
     dir=../validation/Athaliana/data/GATC/$name
-    CUDA_VISIBLE_DEVICES=0 python nemo/predict.py $dir $modelfile
+    CUDA_VISIBLE_DEVICES=0 python nemo/validation.py $dir $modelfile
 done & pid1=$!
 
 for fasta in $(cat ../validation/Athaliana/genomes_set2.txt)
 do
     name=$(basename $fasta .chr.fa)
     dir=../validation/Athaliana/data/eQTL/$name
-    CUDA_VISIBLE_DEVICES=1 python nemo/predict.py $dir $modelfile
+    CUDA_VISIBLE_DEVICES=1 python nemo/validation.py $dir $modelfile
     dir=../validation/Athaliana/data/GATC/$name
-    CUDA_VISIBLE_DEVICES=1 python nemo/predict.py $dir $modelfile
+    CUDA_VISIBLE_DEVICES=1 python nemo/validation.py $dir $modelfile
 done & pid2=$!
 
 wait $pid1 $pid2

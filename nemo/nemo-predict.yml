@@ -1,0 +1,19 @@
+name: nemo-predict
+channels:
+  - conda-forge
+  - bioconda
+  - anaconda
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+dependencies:
+  - agat
+  - bedtools
+  - bio
+  - numpy
+  - pandas
+  - pyarrow
+  - python=3.12
+  - samtools
+  - tensorflow=2.21
+
+

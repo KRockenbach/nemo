@@ -7,7 +7,7 @@
 #email: kevin.rockenbach@ag.uni-giessen.de
 #date: 2025-10-27
 #version: 1.0.0
-#usage: bash prep.sh -f|--fasta <GENOME_FASTA> -g|--gff <GENOME_GFF> -o|--outdir <OUTPUT_DIRECTORY> -l|--genelist <GENE_LIST: all> -t|--transcript <Bool Transcipt-level: False>
+#usage: bash ./prep -f|--fasta <GENOME_FASTA> -g|--gff <GENOME_GFF> -o|--outdir <OUTPUT_DIRECTORY> -l|--genelist <GENE_LIST: all> -t|--transcript <Bool Transcipt-level: False>
 #=========================================================================================================
 
 LIST="all"
@@ -42,7 +42,7 @@ while [ : ]; do
     shift 1
     ;;
   -h | --help)
-    echo "Usage: $(basename $0) [-f | --fasta arg] [-g | --gff arg] [-o | --outdir arg] [-l | --outdir arg; default: all] [-t | --transcript; delault: False]"
+    echo "Usage: $(basename $0) [-f | --fasta arg] [-g | --gff arg] [-o | --outdir arg] [-l | --genelist arg; default: all] [-t | --transcript; delault: False]"
     exit 1
     ;;
   --)
@@ -52,10 +52,10 @@ while [ : ]; do
   esac
 done
 
-source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
-source ${CONDA_PREFIX}/etc/profile.d/conda.sh
+#source ${CONDA_PREFIX}/etc/profile.d/mamba.sh
+#source ${CONDA_PREFIX}/etc/profile.d/conda.sh
 
-mamba activate prep
+#mamba activate prep
 
 mkdir -p $OUTDIR
 
@@ -128,7 +128,7 @@ gzip ${OUTDIR}/merged.data
 
 python3 ${SOURCE_PATH}/nemo/preprocessing/setup_full.py ${OUTDIR}/merged.data.gz ${OUTDIR} 0
 
-mamba deactivate
+#mamba deactivate
 
 #### clean up
 

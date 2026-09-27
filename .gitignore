@@ -2,14 +2,17 @@ scripts/nemo/hyperparam_tuning/expression_*
 scripts/nemo/attribution/gene_*
 scripts/nemo/utils/one_cycle_scheduler_tf/
 scripts/*tmp*
-obsolete/
 set_scaler.py
+nemo_v1.0_scaler.pkl
 
 */__pycache__/
 
 *.db
 *.db-journal
-*.tar.gz
+data*.tar.gz
+model*.tar.gz
+result*.tar.gz
+validation*.tar.gz
 *.tar
 *.csv
 *.fasta
@@ -19,7 +22,6 @@ set_scaler.py
 *.gtf
 *.gc
 *.stats
-*.gz
 *.feather
 *.npy
 *.npz
@@ -43,9 +45,6 @@ set_scaler.py
 
 # Example code in package build process
 *-Ex.R
-
-# Output files from R CMD build
-/*.tar.gz
 
 # Output files from R CMD check
 /*.Rcheck/
