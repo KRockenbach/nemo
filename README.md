@@ -12,7 +12,7 @@ cd nemo
 
 Environments are managed using Mamba (https://mamba.readthedocs.io/en/latest/installation/mamba-installation.html).
 For GPU acceleration, nvidia drivers >=525.60.13 must be installed.
-If no nvidia drivers are installed inference will run on CPU.
+If no nvidia drivers are installed, inference will run on CPU.
 ```
 mamba env create -f nemo-predict.yml
 ```
@@ -34,7 +34,7 @@ The output is a tab separated file `<OUTPUT_PREFIX>.predicions.tsv` containing p
 Model outputs are rounded to 1 decimal place and clipped at zero. 
 The expression values represent median expression across *Brassica napus* tissues under standard greenhouse conditions.
 
-Memory comsumption can be managed using the `-b/--batch_size` option. The default batch size is 120.
+Memory consumption can be managed using the `-b/--batch_size` option. The default batch size is 120.
 
 
 # How to cite us
