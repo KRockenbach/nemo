@@ -31,8 +31,8 @@ python nemo.py -f/--fasta <ASSEMBLY> -g/gff <ANNOTATION> -p/--prefix <OUTPUT_PRE
 A tmp directory can be set using the optional `-t/--tmp` option, or by setting the TMPDIR environment variable.
 
 The output is a tab separated file `<OUTPUT_PREFIX>.predicions.tsv` containing predicted TPM normalized expression values for each transcript.
-Model outputs are rounded to 1 decimal and clipped at zero. 
-The expression values represent median expression across Brassica napus tissues under standard greenhouse conditions.
+Model outputs are rounded to 1 decimal place and clipped at zero. 
+The expression values represent median expression across *Brassica napus* tissues under standard greenhouse conditions.
 
 Memory comsumption can be managed using the `-b/--batch_size` option. The default batch size is 120.
 
