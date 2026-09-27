@@ -1,6 +1,6 @@
-The napus expression model (nemo) is a deep convolutional neural network that predicts median gene expression across tissues under control conditions in rapeseed (*Brassica napus*).
+The *napus* expression model (*n*emo) is a deep convolutional neural network that predicts median gene expression across tissues under control conditions in rapeseed (*Brassica napus*).
 
-![nemo logo](relative%20logo/nemo.jpg?raw=true "Title")
+![nemo logo](logo/nemo.jpg?raw=true "The napus expression model")
 
 # Installation
 
